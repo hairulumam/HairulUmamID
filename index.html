@@ -1572,31 +1572,76 @@ function updateGenNav(maxGen) {
 }
 
 // ════════════════════════════════════
-// SEARCH
+// ════════════════════════════════════
+// SEARCH + RECENT HISTORY
 // ════════════════════════════════════
 const searchInput=document.getElementById('search');
 const searchDropdown=document.getElementById('search-dropdown');
 const sqList=document.getElementById('sq-list');
 const chainPanel=document.getElementById('chain-panel');
+const RECENT_KEY = 'silsilah_recent_search';
+const MAX_RECENT = 6;
+
+function getRecent() {
+  try { return JSON.parse(localStorage.getItem(RECENT_KEY)) || []; } catch { return []; }
+}
+function saveRecent(id) {
+  const p = persons.find(x=>x.id===id); if(!p) return;
+  let recent = getRecent().filter(r=>r.id!==id);
+  recent.unshift({ id, name: p.name, gender: p.gender, gen: p.gen });
+  if (recent.length > MAX_RECENT) recent = recent.slice(0, MAX_RECENT);
+  try { localStorage.setItem(RECENT_KEY, JSON.stringify(recent)); } catch {}
+}
+
+function renderSearchItem(p, label) {
+  const nasab = getNasabString(p.id);
+  const ini = p.name.replace(/^(KH\.|H\.|Hj\.|Nyai)\s*/i,'').split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase().substring(0,2);
+  const item = document.createElement('div'); item.className='sq-item'; item.dataset.id=p.id;
+  item.innerHTML=`<div class="si-badge ${p.gender}">${ini}</div><div class="si-info"><div class="si-name">${label||p.name}</div><div class="si-chain" title="${nasab}">${nasab}</div></div>`;
+  item.addEventListener('click',()=>showChainPanel(p.id));
+  return item;
+}
+
+function showRecentInSearch() {
+  const recent = getRecent();
+  sqList.innerHTML = '';
+  if (!recent.length) return;
+  // header
+  const hdr = document.createElement('div');
+  hdr.style.cssText = 'padding:6px 14px 4px;font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--ink4);display:flex;justify-content:space-between;align-items:center;';
+  hdr.innerHTML = '<span>🕐 Terakhir dicari</span><span onclick="clearRecent()" style="cursor:pointer;color:var(--rose2);font-size:0.65rem;font-weight:600">Hapus</span>';
+  sqList.appendChild(hdr);
+  let shown = 0;
+  recent.forEach(r => {
+    const p = persons.find(x=>x.id===r.id); if(!p) return;
+    sqList.appendChild(renderSearchItem(p));
+    shown++;
+  });
+  if (shown) searchDropdown.classList.add('open');
+}
+
+function clearRecent() {
+  try { localStorage.removeItem(RECENT_KEY); } catch {}
+  sqList.innerHTML = '';
+  searchDropdown.classList.remove('open');
+}
+
+searchInput.addEventListener('focus', () => {
+  if (!searchInput.value.trim()) showRecentInSearch();
+});
 
 searchInput.addEventListener('input',()=>{
   const q=searchInput.value.trim().toLowerCase(); chainPanel.classList.remove('open');
-  if(!q){ searchDropdown.classList.remove('open'); return; }
+  if(!q){ showRecentInSearch(); return; }
   const hits=persons.filter(p=>p.name.toLowerCase().includes(q)).slice(0,10);
   sqList.innerHTML='';
   if(!hits.length){ sqList.innerHTML='<div class="sq-item" style="color:var(--ink4);cursor:default;font-style:italic;padding:12px 14px">Tidak ditemukan</div>'; searchDropdown.classList.add('open'); return; }
-  hits.forEach(p=>{
-    const nasab=getNasabString(p.id);
-    const ini=p.name.replace(/^(KH\.|H\.|Hj\.|Nyai)\s*/i,'').split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase().substring(0,2);
-    const item=document.createElement('div'); item.className='sq-item'; item.dataset.id=p.id;
-    item.innerHTML=`<div class="si-badge ${p.gender}">${ini}</div><div class="si-info"><div class="si-name">${p.name}</div><div class="si-chain" title="${nasab}">${nasab}</div></div>`;
-    item.addEventListener('click',()=>showChainPanel(p.id));
-    sqList.appendChild(item);
-  });
+  hits.forEach(p=>sqList.appendChild(renderSearchItem(p)));
   searchDropdown.classList.add('open');
 });
 
 function showChainPanel(id) {
+  saveRecent(id);
   const chain=buildChain(id), p=persons.find(x=>x.id===id);
   document.getElementById('cp-name').textContent=p.name;
   document.getElementById('cp-sub').textContent=`${p.gender==='M'?'♂ Laki-laki':'♀ Perempuan'} · Generasi ke-${p.gen}`;
@@ -1683,7 +1728,13 @@ function openAddForm(_,parentId){
   document.getElementById('f-gender').value='M';
   document.getElementById('f-wifeorder').value='';
   document.getElementById('f-del-btn').style.display='none';
-  populateParentSelect(parentId||null);
+  // Jika tidak ada parentId (tambah dari tombol umum), pakai terakhir dipilih
+  if (!parentId) {
+    const last = getLastParent();
+    populateParentSelect(last ? last.id : null);
+  } else {
+    populateParentSelect(parentId);
+  }
   document.getElementById('form-overlay').classList.add('open');
 }
 function openEditForm(id){
@@ -1789,11 +1840,19 @@ function closeParentList() {
   document.getElementById('parent-list').style.display = 'none';
 }
 
+const LAST_PARENT_KEY = 'silsilah_last_parent';
+
 function selectParent(id, name) {
   document.getElementById('f-parent').value = id;
   document.getElementById('f-parent-search').value = name;
   document.getElementById('f-parent-clear').style.display = '';
   closeParentList();
+  // Simpan pilihan terakhir
+  try { localStorage.setItem(LAST_PARENT_KEY, JSON.stringify({id, name})); } catch {}
+}
+
+function getLastParent() {
+  try { return JSON.parse(localStorage.getItem(LAST_PARENT_KEY)); } catch { return null; }
 }
 
 function clearParentSearch() {
@@ -2045,11 +2104,39 @@ function closeMobileSearch() {
   document.getElementById('mobile-sq-list').innerHTML = '';
 }
 
+document.getElementById('mobile-search-inp').addEventListener('focus', function() {
+  if (!this.value.trim()) showMobileRecent();
+});
+
+function showMobileRecent() {
+  const list = document.getElementById('mobile-sq-list');
+  list.innerHTML = '';
+  const recent = getRecent();
+  if (!recent.length) return;
+  const hdr = document.createElement('div');
+  hdr.style.cssText = 'padding:8px 14px 4px;font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#9a8060;display:flex;justify-content:space-between;align-items:center;background:#fdf8f0;';
+  hdr.innerHTML = '<span>🕐 Terakhir dicari</span><span onclick="clearRecent()" style="cursor:pointer;color:#a0304e;font-size:0.65rem">Hapus</span>';
+  list.appendChild(hdr);
+  recent.forEach(r => {
+    const p = persons.find(x=>x.id===r.id); if(!p) return;
+    const nasab = getNasabString(p.id);
+    const ini = p.name.replace(/^(KH\.|H\.|Hj\.|Nyai)\s*/i,'').split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase().substring(0,2);
+    const item = document.createElement('div');
+    item.className = 'mobile-sq-item';
+    item.innerHTML = `<div style="width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.82rem;font-weight:700;flex-shrink:0;background:${p.gender==='M'?'#e8f4f2':'#faedf1'};color:${p.gender==='M'?'#1a5c52':'#7a2040'};">${ini}</div><div style="flex:1;min-width:0"><div style="font-size:0.9rem;font-weight:600;color:#3d2e14">${p.name}</div><div style="font-size:0.72rem;color:#9a8060;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-style:italic">${nasab}</div></div><div style="font-size:0.7rem;color:#9a8060;flex-shrink:0">Gen ${p.gen}</div>`;
+    item.addEventListener('click', () => {
+      closeMobileSearch();
+      setTimeout(() => { saveRecent(p.id); openDetail(p.id); highlightCard(p.id); }, 200);
+    });
+    list.appendChild(item);
+  });
+}
+
 document.getElementById('mobile-search-inp').addEventListener('input', function() {
   const q = this.value.trim().toLowerCase();
   const list = document.getElementById('mobile-sq-list');
   list.innerHTML = '';
-  if (!q) return;
+  if (!q) { showMobileRecent(); return; }
   const hits = persons.filter(p => p.name.toLowerCase().includes(q)).slice(0, 12);
   if (!hits.length) {
     list.innerHTML = '<div style="padding:16px;text-align:center;color:var(--ink4);font-style:italic">Tidak ditemukan</div>';
@@ -2069,7 +2156,7 @@ document.getElementById('mobile-search-inp').addEventListener('input', function(
       <div style="font-size:0.7rem;color:var(--ink4);flex-shrink:0">Gen ${p.gen}</div>`;
     item.addEventListener('click', () => {
       closeMobileSearch();
-      setTimeout(() => { openDetail(p.id); highlightCard(p.id); }, 200);
+      setTimeout(() => { saveRecent(p.id); openDetail(p.id); highlightCard(p.id); }, 200);
     });
     list.appendChild(item);
   });
