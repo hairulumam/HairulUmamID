@@ -1806,6 +1806,7 @@ function openDetail(id) {
   document.getElementById('d-spouse').textContent=(spouseOf?[spouseOf]:spouses).map(s=>s.name).join(', ')||'—';
   const ownSps=persons.filter(s=>s.spouseOf===id);
   const children=persons.filter(c=>[p,...ownSps].some(ap=>ap.id===c.parentId));
+  children.sort((a,b)=>{ const ao=a.order!=null?a.order:9999,bo=b.order!=null?b.order:9999; if(ao!==bo)return ao-bo; return persons.indexOf(a)-persons.indexOf(b); });
   document.getElementById('d-children').textContent=children.map(c=>c.name).join(', ')||'—';
   // chain
   const chain=buildChain(id), chainEl=document.getElementById('d-chain'); chainEl.innerHTML='';
