@@ -1226,10 +1226,10 @@ function buildChain(id) {
 
 function getNasabString(id) {
   const chain=buildChain(id); if(!chain.length) return '';
+  // bin/binti mengikuti gender LELUHUR yang disebutkan (item ke-i)
   return chain.map((item,i)=>{
     if(i===0) return item.person.name;
-    const prev=chain[i-1].person;
-    return (prev.gender==='M'?'bin ':'binti ')+item.person.name;
+    return (item.person.gender==='M'?'bin ':'binti ')+item.person.name;
   }).join(' ');
 }
 
@@ -1464,7 +1464,7 @@ function showChainPanel(id) {
     if(i<chain.length-1){ const vl=document.createElement('div'); vl.className='chain-vline'; left.appendChild(vl); }
     const wrap2=document.createElement('div'); wrap2.className='chain-card-wrap';
     const card=document.createElement('div'); card.className=`chain-card ${item.person.gender}`;
-    const prev=chain[i-1]; const conn=i===0?'':(prev.person.gender==='M'?'bin ':'binti ');
+    const conn=i===0?'':(item.person.gender==='M'?'bin ':'binti ');
     const ini=item.person.name.replace(/^(KH\.|H\.|Hj\.|Nyai)\s*/i,'').split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase().substring(0,2);
     card.innerHTML=`<div style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700;background:${item.person.gender==='M'?'var(--teal-light)':'var(--rose-light)'};color:${item.person.gender==='M'?'var(--teal)':'var(--rose)'};flex-shrink:0;">${ini}</div><div class="cc-info">${conn?`<div class="cc-connector">${conn}</div>`:''}<div class="cc-name">${item.person.name}</div>${item.person.note?`<div class="cc-meta">${item.person.note}</div>`:''}</div>`;
     card.addEventListener('click',()=>{ closeChainPanel(); openDetail(item.person.id); });
@@ -1512,7 +1512,7 @@ function openDetail(id) {
     const badge=document.createElement('div'); badge.className='ncb-badge'+(i===0?' self':''); badge.textContent=i===0?'★':i;
     const nameEl=document.createElement('span'); nameEl.className='ncb-name';
     const prev=chain[i-1];
-    nameEl.textContent=i===0?item.person.name:((prev.person.gender==='M'?'bin ':'binti ')+item.person.name);
+    nameEl.textContent=i===0?item.person.name:((item.person.gender==='M'?'bin ':'binti ')+item.person.name);
     nameEl.title='Klik untuk lihat detail';
     nameEl.addEventListener('click',()=>{ closeDetail(); openDetail(item.person.id); });
     row.appendChild(badge); row.appendChild(nameEl); chainEl.appendChild(row);
