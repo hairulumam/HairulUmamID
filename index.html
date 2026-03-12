@@ -688,6 +688,28 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
   .pcard-name { font-size: 0.62rem; }
   .pcard-tag { font-size: 0.5rem; }
 
+  /* Force card colors on mobile (CSS var fallback) */
+  .pcard.M {
+    border-color: #9ecec8 !important;
+    background: linear-gradient(145deg, #ffffff 0%, #e8f4f2 100%) !important;
+  }
+  .pcard.F {
+    border-color: #e4b8c8 !important;
+    background: linear-gradient(145deg, #ffffff 0%, #faedf1 100%) !important;
+  }
+  .pcard.M .pcard-icon {
+    background: #e8f4f2 !important;
+    color: #1a5c52 !important;
+    border: 2px solid #b0d8d2 !important;
+  }
+  .pcard.F .pcard-icon {
+    background: #faedf1 !important;
+    color: #7a2040 !important;
+    border: 2px solid #e0b8c4 !important;
+  }
+  .chain-card.M { background: #e8f4f2 !important; border-color: #b0d8d2 !important; }
+  .chain-card.F { background: #faedf1 !important; border-color: #e0b8c4 !important; }
+
   /* Modal full screen on mobile */
   .overlay { align-items: flex-end; padding: 0; }
   .modal {
@@ -1715,34 +1737,24 @@ async function loadFromCloud() {
 
 // ── RESET — hapus semua data ──
 async function clearStorage() {
-  if (!confirm('Hapus SEMUA data di cloud dan mulai dari awal?\n\nData contoh bawaan tidak akan dimuat — pohon akan kosong siap diisi manual.')) return;
-  showLoading('Menghapus data cloud…');
-  persons = []; nextId = 1;
-  filterGen = 'all'; filterGender = null;
-  // Push empty to cloud
-  try {
-    const payload = { persons: [], nextId: 1, savedAt: new Date().toISOString() };
-    await fetch(GAS_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify(payload)
-    });
-  } catch(e) { console.warn('reset cloud err:', e); }
-  try { localStorage.removeItem('silsilah_cloud_backup'); } catch(_) {}
-  rebuildGen(); render(); updateStats();
-  hideLoading();
-  showToast('✓ Semua data dihapus — pohon siap diisi');
+  await clearAllData();
 }
 
 
 async function clearAllData() {
-  if (!confirm('Hapus semua data? Pohon akan kosong siap diisi manual.')) return;
+  if (!confirm('⚠️ HAPUS SEMUA DATA?\n\nSemua anggota keluarga akan dihapus permanen dari cloud.\nTindakan ini TIDAK BISA dibatalkan!')) return;
+  const jawab = prompt('Ketik "HAPUS" untuk konfirmasi:');
+  if (!jawab || jawab.trim().toUpperCase() !== 'HAPUS') {
+    showToast('✗ Dibatalkan — ketik HAPUS untuk konfirmasi');
+    return;
+  }
+  showLoading('Menghapus semua data…');
   persons = []; nextId = 1;
   filterGen = 'all'; filterGender = null;
   rebuildGen(); render(); updateStats();
   await saveToStorage();
-  showToast('✓ Data dihapus — siap input manual');
+  hideLoading();
+  showToast('✓ Semua data dihapus');
 }
 
 // ── INIT ──
