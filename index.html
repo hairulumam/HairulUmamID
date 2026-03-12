@@ -1557,14 +1557,14 @@ function openEditForm(id){
   document.getElementById('form-overlay').classList.add('open');
 }
 function populateParentSelect(selectedId){
-  // Rebuild gen first so no Gen 0
   rebuildGen();
   const sel=document.getElementById('f-parent');
   sel.innerHTML='<option value="">— Pilih (opsional) —</option>';
-  const maxGen = Math.max(...persons.map(p=>p.gen), 1);
-  // Latest generation first (most likely parent)
+  const validPersons = persons.filter(p => p.gen > 0);
+  if (!validPersons.length) return; // kosong, tidak ada pilihan
+  const maxGen = Math.max(...validPersons.map(p=>p.gen), 1);
   for (let g = maxGen; g >= 1; g--) {
-    const group = persons.filter(p => p.gen === g && p.gen > 0);
+    const group = validPersons.filter(p => p.gen === g);
     if (!group.length) continue;
     const optgroup = document.createElement('optgroup');
     optgroup.label = `── Generasi ${g} (${group.length} orang) ──`;
@@ -1762,6 +1762,8 @@ async function initData() {
       showToast('☁ Data dimuat dari cloud');
     }
     setBadge('idle');
+    // auto-resave to fix any gen:0 entries
+    saveToStorage();
   } else {
     // Cloud kosong — mulai kosong, siap input manual
     persons = []; nextId = 1;
