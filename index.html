@@ -2108,6 +2108,8 @@ async function loadFromCloud() {
     const data = JSON.parse(text);
     if (!data || !data.persons || !data.persons.length) return false;
     persons = data.persons;
+    // Migrasi: pastikan field order ada di semua person
+    persons.forEach(p=>{ if(p.order===undefined) p.order=null; });
     nextId = data.nextId || (Math.max(...persons.map(p=>parseInt(p.id.replace('p',''))||0)) + 1);
     return data.savedAt || true;
   } catch(e) {
@@ -2119,6 +2121,7 @@ async function loadFromCloud() {
         const data = JSON.parse(backup);
         if (data && data.persons && data.persons.length) {
           persons = data.persons;
+          persons.forEach(p=>{ if(p.order===undefined) p.order=null; });
           nextId = data.nextId || 1;
           return 'backup';
         }
