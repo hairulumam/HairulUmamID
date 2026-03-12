@@ -549,6 +549,182 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
 ::-webkit-scrollbar-track { background:var(--parch2); }
 ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
 ::-webkit-scrollbar-thumb:hover { background:var(--gold); }
+/* ═══════════════════════════════════════
+   MOBILE RESPONSIVE
+   ═══════════════════════════════════════ */
+
+/* ── Mobile bottom nav bar ── */
+.mobile-nav {
+  display: none;
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
+  background: linear-gradient(135deg, #1a3a30, #1e4a3e);
+  border-top: 1px solid rgba(212,160,23,0.25);
+  padding: 6px 0 max(6px, env(safe-area-inset-bottom));
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
+}
+.mobile-nav-items {
+  display: flex; justify-content: space-around; align-items: center;
+}
+.mobile-nav-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  background: none; border: none; cursor: pointer; padding: 6px 12px;
+  color: rgba(212,160,23,0.65); transition: all 0.2s; border-radius: 8px;
+  min-width: 56px;
+}
+.mobile-nav-btn:active { transform: scale(0.92); }
+.mobile-nav-btn.active { color: var(--gold3); }
+.mobile-nav-btn .mnb-icon { font-size: 1.3rem; line-height: 1; }
+.mobile-nav-btn .mnb-label { font-size: 0.6rem; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
+
+/* ── Mobile search overlay ── */
+.mobile-search-overlay {
+  display: none; position: fixed; inset: 0; z-index: 400;
+  background: rgba(15,28,18,0.5); backdrop-filter: blur(4px);
+}
+.mobile-search-overlay.open { display: block; }
+.mobile-search-box {
+  position: absolute; top: 0; left: 0; right: 0;
+  background: #fff; border-radius: 0 0 16px 16px;
+  padding: 16px 16px max(16px, env(safe-area-inset-top));
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  animation: slideDown 0.25s ease;
+}
+@keyframes slideDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
+.mobile-search-inner { position: relative; }
+.mobile-search-inp {
+  width: 100%; padding: 12px 16px 12px 42px;
+  border: 1.5px solid var(--border); border-radius: 10px;
+  font-family: 'Source Sans 3', sans-serif; font-size: 1rem;
+  color: var(--ink); background: var(--parch2); outline: none;
+}
+.mobile-search-inp:focus { border-color: var(--teal2); background: #fff; }
+.mobile-search-icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); font-size: 1rem; color: var(--ink4); }
+.mobile-search-close {
+  position: absolute; right: 0; top: 0;
+  background: var(--parch3); border: none; border-radius: 50%;
+  width: 32px; height: 32px; cursor: pointer; font-size: 0.9rem;
+  display: flex; align-items: center; justify-content: center; color: var(--ink3);
+}
+.mobile-sq-list { max-height: 55vh; overflow-y: auto; margin-top: 10px; border-radius: 8px; border: 1px solid var(--border2); overflow: hidden; }
+.mobile-sq-item {
+  display: flex; align-items: center; gap: 10px; padding: 12px 14px;
+  border-bottom: 1px solid var(--border2); cursor: pointer; background: #fff;
+  active-color: var(--gold-bg);
+}
+.mobile-sq-item:last-child { border-bottom: none; }
+.mobile-sq-item:active { background: var(--gold-bg); }
+
+/* ── Mobile stats sheet ── */
+.mobile-sheet {
+  display: none; position: fixed; left: 0; right: 0; bottom: 0; z-index: 350;
+  background: #fff; border-radius: 20px 20px 0 0;
+  box-shadow: 0 -8px 40px rgba(0,0,0,0.18);
+  max-height: 85vh; overflow-y: auto;
+  padding-bottom: max(20px, env(safe-area-inset-bottom));
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+.mobile-sheet.open { transform: translateY(0); display: block; }
+.mobile-sheet-backdrop {
+  display: none; position: fixed; inset: 0; z-index: 340;
+  background: rgba(30,22,9,0.4); backdrop-filter: blur(2px);
+}
+.mobile-sheet-backdrop.open { display: block; }
+.mobile-sheet-handle {
+  width: 40px; height: 4px; border-radius: 2px;
+  background: var(--border); margin: 12px auto 0;
+}
+.mobile-sheet-title {
+  font-family: 'Lora', serif; font-size: 1.1rem; font-weight: 700;
+  color: var(--ink2); padding: 14px 20px 10px; border-bottom: 1px solid var(--border2);
+}
+
+/* ── Mobile detail modal full screen ── */
+@media (max-width: 768px) {
+  /* Hide desktop sidebar */
+  .sidebar { display: none !important; }
+
+  /* Header mobile */
+  .header-top {
+    padding: 0 14px;
+    min-height: 56px;
+    gap: 10px;
+  }
+  .header-ornament { font-size: 1.2rem; }
+  .header-main { font-size: 1rem; }
+  .header-sub { display: none; }
+  .header-divider { display: none; }
+  .role-badge { display: none; }
+  #autosave-badge { display: none !important; }
+
+  /* Hide desktop search & buttons from header */
+  .search-wrap { display: none; }
+  .header-btns { display: none; }
+
+  /* Show mobile nav */
+  .mobile-nav { display: block; }
+
+  /* Canvas needs bottom padding for nav bar */
+  .canvas-wrap {
+    padding-bottom: 70px;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x pan-y;
+  }
+
+  /* Tree scale smaller on mobile */
+  #tree-root {
+    padding: 24px 20px 80px;
+    min-width: 1200px;
+  }
+
+  /* Cards slightly smaller */
+  :root {
+    --card-w: 110px;
+    --gap-x: 12px;
+    --gap-y: 56px;
+  }
+  .pcard { padding: 8px 6px 7px; }
+  .pcard-icon { width: 30px; height: 30px; font-size: 0.7rem; }
+  .pcard-name { font-size: 0.62rem; }
+  .pcard-tag { font-size: 0.5rem; }
+
+  /* Modal full screen on mobile */
+  .overlay { align-items: flex-end; padding: 0; }
+  .modal {
+    width: 100%; max-width: 100%;
+    border-radius: 20px 20px 0 0;
+    max-height: 90vh;
+    margin: 0;
+  }
+  .modal-header { border-radius: 20px 20px 0 0; }
+
+  /* Form modal full screen */
+  .form-overlay { align-items: flex-end; }
+  .form-modal {
+    width: 100%; max-width: 100%;
+    border-radius: 20px 20px 0 0;
+    max-height: 92vh;
+    margin: 0;
+  }
+  .form-header { border-radius: 20px 20px 0 0; }
+
+  /* Login card on mobile */
+  .login-card {
+    width: 100%;
+    max-width: 100%;
+    margin: 16px;
+    border-radius: 16px;
+  }
+
+  /* Cloud overlay text */
+  #cloud-msg { font-size: 0.9rem; text-align: center; padding: 0 20px; }
+}
+
+@media (max-width: 400px) {
+  :root { --card-w: 96px; --gap-x: 10px; }
+  .pcard-name { font-size: 0.58rem; }
+}
+
 
 /* ── Cloud loading overlay ── */
 #cloud-overlay {
@@ -829,6 +1005,98 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
 </div>
 
 </div><!-- /#app -->
+
+<!-- ═══ MOBILE BOTTOM NAV ═══ -->
+<div class="mobile-nav" id="mobile-nav">
+  <div class="mobile-nav-items">
+    <button class="mobile-nav-btn active" id="mnb-home" onclick="mobileNavHome()">
+      <span class="mnb-icon">🌳</span>
+      <span class="mnb-label">Pohon</span>
+    </button>
+    <button class="mobile-nav-btn" id="mnb-search" onclick="mobileNavSearch()">
+      <span class="mnb-icon">🔍</span>
+      <span class="mnb-label">Cari</span>
+    </button>
+    <button class="mobile-nav-btn" id="mnb-stats" onclick="mobileNavStats()">
+      <span class="mnb-icon">📊</span>
+      <span class="mnb-label">Statistik</span>
+    </button>
+    <button class="mobile-nav-btn admin-only" id="mnb-add" onclick="openAddForm(null)" style="display:none">
+      <span class="mnb-icon">➕</span>
+      <span class="mnb-label">Tambah</span>
+    </button>
+    <button class="mobile-nav-btn" id="mnb-menu" onclick="mobileNavMenu()">
+      <span class="mnb-icon">☰</span>
+      <span class="mnb-label">Menu</span>
+    </button>
+  </div>
+</div>
+
+<!-- ═══ MOBILE SEARCH OVERLAY ═══ -->
+<div class="mobile-search-overlay" id="mobile-search-overlay" onclick="if(event.target===this)closeMobileSearch()">
+  <div class="mobile-search-box">
+    <div class="mobile-search-inner">
+      <span class="mobile-search-icon">🔍</span>
+      <input class="mobile-search-inp" id="mobile-search-inp" placeholder="Cari nama anggota keluarga…" autocomplete="off">
+      <button class="mobile-search-close" onclick="closeMobileSearch()">✕</button>
+    </div>
+    <div class="mobile-sq-list" id="mobile-sq-list"></div>
+  </div>
+</div>
+
+<!-- ═══ MOBILE STATS SHEET ═══ -->
+<div class="mobile-sheet-backdrop" id="stats-backdrop" onclick="closeMobileStats()"></div>
+<div class="mobile-sheet" id="stats-sheet">
+  <div class="mobile-sheet-handle"></div>
+  <div class="mobile-sheet-title">📊 Statistik &amp; Filter</div>
+  <div style="padding:16px 20px">
+    <!-- filter pills -->
+    <div style="margin-bottom:14px">
+      <div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--ink4);margin-bottom:8px">Filter Generasi</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        <button class="gen-pill active" id="m-pill-all" onclick="setGenFilter('all');updateMobilePills()">Semua</button>
+        <div id="m-gen-pills" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+      </div>
+    </div>
+    <!-- stats -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+      <div style="background:var(--parch2);border-radius:10px;padding:14px;text-align:center;border:1px solid var(--border2)">
+        <div style="font-family:'Lora',serif;font-size:2rem;font-weight:700;color:var(--gold2);line-height:1" id="m-st-total">0</div>
+        <div style="font-size:0.7rem;color:var(--ink4);margin-top:4px;text-transform:uppercase;letter-spacing:0.5px">Anggota</div>
+      </div>
+      <div style="background:var(--parch2);border-radius:10px;padding:14px;text-align:center;border:1px solid var(--border2)">
+        <div style="font-family:'Lora',serif;font-size:2rem;font-weight:700;color:var(--gold2);line-height:1" id="m-st-gen">0</div>
+        <div style="font-size:0.7rem;color:var(--ink4);margin-top:4px;text-transform:uppercase;letter-spacing:0.5px" id="m-st-gen-lbl">Generasi</div>
+      </div>
+      <div style="background:var(--teal-light);border-radius:10px;padding:14px;text-align:center;border:1px solid #b0d8d2;cursor:pointer" onclick="cycleGenderFilter('M');updateMobileStats()">
+        <div style="font-family:'Lora',serif;font-size:2rem;font-weight:700;color:var(--teal);line-height:1" id="m-st-male">0</div>
+        <div style="font-size:0.7rem;color:var(--teal);margin-top:4px;text-transform:uppercase;letter-spacing:0.5px">Laki-laki ♂</div>
+      </div>
+      <div style="background:var(--rose-light);border-radius:10px;padding:14px;text-align:center;border:1px solid #e4b8c8;cursor:pointer" onclick="cycleGenderFilter('F');updateMobileStats()">
+        <div style="font-family:'Lora',serif;font-size:2rem;font-weight:700;color:var(--rose);line-height:1" id="m-st-female">0</div>
+        <div style="font-size:0.7rem;color:var(--rose);margin-top:4px;text-transform:uppercase;letter-spacing:0.5px">Perempuan ♀</div>
+      </div>
+    </div>
+    <!-- gen nav -->
+    <div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--ink4);margin-bottom:8px">Lompat ke Generasi</div>
+    <div id="m-gen-nav" style="display:flex;flex-direction:column;gap:4px"></div>
+    <!-- admin section -->
+    <div class="admin-only" style="margin-top:16px;display:none">
+      <div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--ink4);margin-bottom:8px">Admin</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="closeMobileStats();setTimeout(()=>openAddForm(null),200)">➕ Tambah Anggota</button>
+        <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="exportExcel()">↓ Export Excel</button>
+      </div>
+      <label style="display:flex;align-items:center;gap:8px;margin-top:8px;border:1.5px dashed var(--border);border-radius:8px;padding:10px 14px;cursor:pointer;font-size:0.82rem;color:var(--ink4)" for="file-input-m">
+        📂 Import dari Excel
+      </label>
+      <input type="file" id="file-input-m" accept=".xlsx,.xls" onchange="importExcel(event)" style="display:none">
+      <button onclick="clearStorage()" style="width:100%;margin-top:8px;padding:9px;border:1.5px dashed #e0b4b4;border-radius:8px;background:none;color:#c0392b;font-size:0.78rem;cursor:pointer;font-family:inherit">↺ Reset ke data contoh</button>
+    </div>
+    <!-- logout -->
+    <button onclick="doLogout()" style="width:100%;margin-top:14px;padding:10px;background:rgba(192,57,43,0.08);border:1.5px solid rgba(192,57,43,0.25);border-radius:8px;color:#c0392b;font-size:0.85rem;cursor:pointer;font-family:inherit">⬅ Keluar</button>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -1409,7 +1677,7 @@ function showToast(msg){ const t=document.getElementById('toast'); t.textContent
 // ════════════════════════════════════
 // GOOGLE SHEETS — Cloud Storage
 // ════════════════════════════════════
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbz9MTPQHVCrbYXtqEab0iDw_v39iPFGBziLShF6sRjt4r9aoT4lVEGDXxlJX8Fotvaj/exec';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbykZwt1x3IKS-8JAzrlnJ4NZRaIM9_tH6Af56klSOuZ-Iu5oEDPp8kM4bA3PubKH6n1/exec';
 
 let isSyncing = false;
 let pendingSave = false;
@@ -1532,6 +1800,183 @@ async function initData() {
   }
   hideLoading();
 }
+
+// ════════════════════════════════════
+// MOBILE UI FUNCTIONS
+// ════════════════════════════════════
+const isMobile = () => window.innerWidth <= 768;
+
+function setMobileNavActive(id) {
+  document.querySelectorAll('.mobile-nav-btn').forEach(b => b.classList.remove('active'));
+  const el = document.getElementById(id);
+  if (el) el.classList.add('active');
+}
+
+function mobileNavHome() {
+  setMobileNavActive('mnb-home');
+  closeMobileSearch(); closeMobileStats();
+}
+
+function mobileNavSearch() {
+  setMobileNavActive('mnb-search');
+  closeMobileStats();
+  openMobileSearch();
+}
+
+function mobileNavStats() {
+  setMobileNavActive('mnb-stats');
+  closeMobileSearch();
+  openMobileStats();
+}
+
+function mobileNavMenu() {
+  setMobileNavActive('mnb-menu');
+  closeMobileSearch();
+  openMobileStats();
+}
+
+// ── Mobile Search ──
+function openMobileSearch() {
+  document.getElementById('mobile-search-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('mobile-search-inp').focus(), 300);
+}
+function closeMobileSearch() {
+  document.getElementById('mobile-search-overlay').classList.remove('open');
+  document.getElementById('mobile-search-inp').value = '';
+  document.getElementById('mobile-sq-list').innerHTML = '';
+}
+
+document.getElementById('mobile-search-inp').addEventListener('input', function() {
+  const q = this.value.trim().toLowerCase();
+  const list = document.getElementById('mobile-sq-list');
+  list.innerHTML = '';
+  if (!q) return;
+  const hits = persons.filter(p => p.name.toLowerCase().includes(q)).slice(0, 12);
+  if (!hits.length) {
+    list.innerHTML = '<div style="padding:16px;text-align:center;color:var(--ink4);font-style:italic">Tidak ditemukan</div>';
+    return;
+  }
+  hits.forEach(p => {
+    const nasab = getNasabString(p.id);
+    const ini = p.name.replace(/^(KH\.|H\.|Hj\.|Nyai)\s*/i,'').split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase().substring(0,2);
+    const item = document.createElement('div');
+    item.className = 'mobile-sq-item';
+    item.innerHTML = `
+      <div style="width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.82rem;font-weight:700;flex-shrink:0;background:${p.gender==='M'?'var(--teal-light)':'var(--rose-light)'};color:${p.gender==='M'?'var(--teal)':'var(--rose)'};">${ini}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:0.9rem;font-weight:600;color:var(--ink2)">${p.name}</div>
+        <div style="font-size:0.72rem;color:var(--ink4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-style:italic">${nasab}</div>
+      </div>
+      <div style="font-size:0.7rem;color:var(--ink4);flex-shrink:0">Gen ${p.gen}</div>`;
+    item.addEventListener('click', () => {
+      closeMobileSearch();
+      setTimeout(() => { openDetail(p.id); highlightCard(p.id); }, 200);
+    });
+    list.appendChild(item);
+  });
+});
+
+// ── Mobile Stats Sheet ──
+function openMobileStats() {
+  updateMobileStats();
+  updateMobilePills();
+  buildMobileGenNav();
+  document.getElementById('stats-backdrop').classList.add('open');
+  document.getElementById('stats-sheet').classList.add('open');
+  // show stats sheet with display:block then animate
+  const sheet = document.getElementById('stats-sheet');
+  sheet.style.display = 'block';
+  requestAnimationFrame(() => sheet.classList.add('open'));
+}
+
+function closeMobileStats() {
+  document.getElementById('stats-backdrop').classList.remove('open');
+  document.getElementById('stats-sheet').classList.remove('open');
+  setMobileNavActive('mnb-home');
+}
+
+function updateMobileStats() {
+  const maxGen = Math.max(...persons.map(p=>p.gen), 0);
+  const filtered = persons.filter(p => {
+    const genOk = filterGen === 'all' || p.gen === filterGen;
+    const genderOk = !filterGender || p.gender === filterGender;
+    return genOk && genderOk;
+  });
+  document.getElementById('m-st-total').textContent = filtered.length;
+  document.getElementById('m-st-gen').textContent = filterGen !== 'all' ? filterGen : maxGen;
+  document.getElementById('m-st-gen-lbl').textContent = filterGen !== 'all' ? 'Gen Dipilih' : 'Generasi';
+  document.getElementById('m-st-male').textContent = filtered.filter(p=>p.gender==='M').length;
+  document.getElementById('m-st-female').textContent = filtered.filter(p=>p.gender==='F').length;
+}
+
+function updateMobilePills() {
+  const maxGen = Math.max(...persons.map(p=>p.gen), 0);
+  const pc = document.getElementById('m-gen-pills');
+  pc.innerHTML = '';
+  for (let g=1; g<=maxGen; g++) {
+    const btn = document.createElement('button');
+    btn.className = 'gen-pill' + (filterGen === g ? ' active' : '');
+    btn.textContent = `Gen ${g}`;
+    btn.style.padding = '5px 12px'; btn.style.fontSize = '0.75rem';
+    btn.onclick = (()=>{ const _g=g; return ()=>{ setGenFilter(_g); updateMobilePills(); updateMobileStats(); closeMobileStats(); }; })();
+    pc.appendChild(btn);
+  }
+  document.getElementById('m-pill-all').className = 'gen-pill' + (filterGen==='all'?' active':'');
+}
+
+function buildMobileGenNav() {
+  const nav = document.getElementById('m-gen-nav');
+  nav.innerHTML = '';
+  const maxGen = Math.max(...persons.map(p=>p.gen), 0);
+  for (let g=1; g<=maxGen; g++) {
+    const cnt = persons.filter(p=>p.gen===g).length;
+    const btn = document.createElement('button');
+    btn.style.cssText = 'width:100%;display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--parch2);border:1px solid var(--border2);border-radius:8px;cursor:pointer;font-family:inherit;font-size:0.85rem;color:var(--ink3);text-align:left;';
+    btn.innerHTML = `<div style="width:8px;height:8px;border-radius:50%;background:var(--gold2);flex-shrink:0"></div>Generasi ${g}<span style="margin-left:auto;font-size:0.72rem;color:var(--ink4)">${cnt} orang</span>`;
+    btn.onclick = () => {
+      closeMobileStats();
+      setTimeout(() => {
+        const row = document.querySelector(`.gen-row[data-gen="${g}"]`);
+        if (row) row.scrollIntoView({behavior:'smooth',block:'center'});
+      }, 300);
+    };
+    nav.appendChild(btn);
+  }
+}
+
+// ── Touch pan for tree canvas ──
+(function() {
+  const wrap = document.getElementById('canvas-wrap');
+  let startX, startY, scrollX, scrollY, isPinching = false;
+  let lastDist = 0;
+
+  wrap.addEventListener('touchstart', e => {
+    if (e.touches.length === 2) {
+      isPinching = true;
+      lastDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+    } else {
+      isPinching = false;
+      startX = e.touches[0].clientX + wrap.scrollLeft;
+      startY = e.touches[0].clientY + wrap.scrollTop;
+    }
+  }, { passive: true });
+
+  wrap.addEventListener('touchmove', e => {
+    if (isPinching && e.touches.length === 2) {
+      const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+      const delta = (dist - lastDist) * 0.008;
+      zoom(delta);
+      lastDist = dist;
+    }
+  }, { passive: true });
+
+  wrap.addEventListener('touchend', () => { isPinching = false; });
+})();
+
+// Override updateStats to also update mobile stats
+const _origUpdateStats = updateStats;
+// updateStats already updates sidebar — also sync mobile if sheet is open
+
 </script>
 </body>
 </html>
