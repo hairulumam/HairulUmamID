@@ -463,6 +463,22 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
 .modal-close:hover { background:var(--border); color:var(--ink); }
 .modal-title { font-family:'Lora',serif; font-size:1.4rem; font-weight:700; color:var(--ink2); padding-right:36px; }
 .modal-sub { font-size:0.78rem; color:var(--ink4); margin-top:4px; }
+.modal-parents {
+  margin-top:8px; padding:7px 12px;
+  background:rgba(184,134,11,0.08); border-radius:8px;
+  border-left:3px solid var(--gold2);
+  font-size:0.8rem; color:var(--ink3); line-height:1.5;
+}
+.modal-parents .mp-label {
+  font-size:0.6rem; font-weight:700; text-transform:uppercase;
+  letter-spacing:1.5px; color:var(--gold2); margin-bottom:3px;
+}
+.modal-parents .mp-names { font-family:'Lora',serif; font-style:italic; }
+.modal-parents .mp-name-link {
+  cursor:pointer; color:var(--ink2); font-weight:600;
+  text-decoration:underline; text-decoration-color:rgba(184,134,11,0.4);
+}
+.modal-parents .mp-name-link:hover { color:var(--teal); }
 .modal-body { padding:22px 26px 26px; }
 
 .nasab-chain-box {
@@ -779,6 +795,14 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
   }
   .modal-title { color: #3d2e14 !important; font-size: 1.15rem !important; }
   .modal-sub { color: #9a8060 !important; }
+  .modal-parents {
+    background: rgba(184,134,11,0.08) !important;
+    border-left: 3px solid #b8860b !important;
+    margin-top: 8px !important;
+  }
+  .modal-parents .mp-label { color: #b8860b !important; }
+  .modal-parents .mp-names { color: #3d2e14 !important; }
+  .modal-parents .mp-name-link { color: #3d2e14 !important; }
   .modal-body { background: #ffffff !important; padding: 16px 18px 20px !important; }
   .modal-close {
     background: #efe5d0 !important;
@@ -1051,17 +1075,19 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
       <button class="modal-close" onclick="closeDetail()">✕</button>
       <div class="modal-title" id="d-name"></div>
       <div class="modal-sub" id="d-sub"></div>
+      <div class="modal-parents" id="d-parents" style="display:none"></div>
     </div>
     <div class="modal-body">
-      <div class="nasab-chain-box">
-        <div class="ncb-label">⛓ Rantai Nasab — Bin / Binti</div>
-        <div class="ncb-steps" id="d-chain"></div>
-      </div>
       <div class="detail-grid">
         <div class="detail-row"><div class="detail-lbl">Generasi</div><div class="detail-val" id="d-gen"></div></div>
         <div class="detail-row"><div class="detail-lbl">Pasangan</div><div class="detail-val" id="d-spouse"></div></div>
         <div class="detail-row"><div class="detail-lbl">Anak-anak</div><div class="detail-val" id="d-children"></div></div>
         <div class="detail-row"><div class="detail-lbl">Catatan</div><div class="detail-val" id="d-note"></div></div>
+      </div>
+      <div class="modal-divider"></div>
+      <div class="nasab-chain-box">
+        <div class="ncb-label">⛓ Rantai Nasab — Bin / Binti</div>
+        <div class="ncb-steps" id="d-chain"></div>
       </div>
       <div class="modal-divider"></div>
       <div class="modal-actions">
@@ -1249,7 +1275,7 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
 // AUTH
 // ════════════════════════════════════
 const ADMIN_USER = 'admin';
-const ADMIN_PASS = 'umam';  // ← ganti password di sini
+const ADMIN_PASS = 'ramli2024';  // ← ganti password di sini
 
 let currentRole = null; // 'admin' | 'viewer'
 let activeTab = 'viewer';
@@ -1687,6 +1713,43 @@ function openDetail(id) {
   currentDetailId=id;
   document.getElementById('d-name').textContent=p.name;
   document.getElementById('d-sub').textContent=p.gender==='M'?'♂ Laki-laki':'♀ Perempuan';
+
+  // ── Tampilkan orang tua di header ──
+  const parentsEl = document.getElementById('d-parents');
+  // Cari ibu (entry yang jadi parentId si anak) dan ayah (kepala keluarga dari ibu)
+  let motherEntry = null, fatherEntry = null;
+  if (p.parentId) {
+    const par = persons.find(x=>x.id===p.parentId);
+    if (par) {
+      if (par.spouseOf) {
+        // parentId menunjuk ke pasangan → dia ibu, kepala keluarga adalah ayah
+        motherEntry = par;
+        fatherEntry = persons.find(x=>x.id===par.spouseOf) || null;
+      } else {
+        // parentId menunjuk ke kepala keluarga langsung
+        fatherEntry = par;
+        // cari pasangan (istri) yang punya anak ini
+        const wives = persons.filter(w=>w.spouseOf===par.id);
+        motherEntry = wives.find(w=>persons.some(c=>c.parentId===w.id && c.id===p.id)) || null;
+      }
+    }
+  }
+  if (fatherEntry || motherEntry) {
+    const hubungan = p.gender==='M' ? 'Putra' : 'Putri';
+    parentsEl.style.display = '';
+    const ayah = fatherEntry ? `<span class="mp-name-link" data-pid="${fatherEntry.id}">${fatherEntry.name}</span>` : null;
+    const ibu  = motherEntry ? `<span class="mp-name-link" data-pid="${motherEntry.id}">${motherEntry.name}</span>` : null;
+    let teks = '';
+    if (ayah && ibu) teks = `${ayah} &amp; ${ibu}`;
+    else if (ayah) teks = ayah;
+    else teks = ibu;
+    parentsEl.innerHTML = `<div class="mp-label">${hubungan} dari</div><div class="mp-names">${teks}</div>`;
+    parentsEl.querySelectorAll('.mp-name-link').forEach(el=>{
+      el.addEventListener('click',()=>{ closeDetail(); openDetail(el.dataset.pid); });
+    });
+  } else {
+    parentsEl.style.display = 'none';
+  }
   document.getElementById('d-gen').textContent=`Generasi ke-${p.gen}`;
   document.getElementById('d-note').textContent=p.note||'—';
   const spouses=persons.filter(s=>s.spouseOf===id);
