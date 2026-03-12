@@ -38,6 +38,8 @@
 
 * { box-sizing:border-box; margin:0; padding:0; }
 html,body { height:100%; overflow:hidden; }
+.app-hidden { display:none !important; }
+.app-visible { display:flex !important; flex-direction:column; height:100%; }
 
 body {
   background: var(--parch2);
@@ -604,7 +606,7 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
 <!-- ═══════════════════════════════════════
      APP
      ═══════════════════════════════════════ -->
-<div id="app" style="display:none;flex-direction:column;height:100%">
+<div id="app" class="app-hidden">
 
 <!-- HEADER -->
 <div class="header">
@@ -844,7 +846,8 @@ function enterApp(role) {
   currentRole = role;
   document.getElementById('login-screen').style.display = 'none';
   const app = document.getElementById('app');
-  app.style.display = 'flex';
+  app.classList.remove('app-hidden');
+  app.classList.add('app-visible');
 
   // role badge
   const badge = document.getElementById('role-badge');
@@ -881,7 +884,9 @@ function applyRoleUI() {
 function doLogout() {
   currentRole = null;
   filterGen = 'all'; filterGender = null;
-  document.getElementById('app').style.display = 'none';
+  const appEl = document.getElementById('app');
+  appEl.classList.remove('app-visible');
+  appEl.classList.add('app-hidden');
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('l-pass').value = '';
   document.getElementById('login-err').classList.remove('show');
@@ -1426,14 +1431,17 @@ function clearStorage() {
 }
 
 function initData() {
-  const savedAt = loadFromStorage();
-  if (savedAt) {
-    const tgl = new Date(savedAt).toLocaleString('id-ID', {day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
-    rebuildGen(); render(); updateStats();
-    showToast(`📂 Data tersimpan dimuat (${tgl})`);
-  } else {
-    loadSample();
-  }
+  // small delay ensures DOM is fully painted before render
+  setTimeout(() => {
+    const savedAt = loadFromStorage();
+    if (savedAt) {
+      const tgl = new Date(savedAt).toLocaleString('id-ID', {day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+      rebuildGen(); render(); updateStats();
+      showToast(`📂 Data dimuat (disimpan ${tgl})`);
+    } else {
+      loadSample();
+    }
+  }, 50);
 }
 </script>
 </body>
