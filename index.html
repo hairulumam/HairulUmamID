@@ -1383,13 +1383,23 @@ function buildChain(id) {
   const byId=Object.fromEntries(persons.map(p=>[p.id,p]));
   const chain=[]; let cur=byId[id]; if(!cur) return chain;
   chain.push({person:cur});
+  const visited = new Set([id]);
   function walkUp(p) {
     if(!p) return;
+    // Prioritas: parentId (jalur kandung) > spouseOf (hanya jika tidak ada parentId)
     if(p.parentId) {
-      const pr=byId[p.parentId]; if(!pr) return;
+      const pr=byId[p.parentId]; if(!pr || visited.has(pr.id)) return;
+      // Kalau pr adalah pasangan (spouseOf), ambil kepala keluarganya sebagai leluhur
       const head=pr.spouseOf?(byId[pr.spouseOf]||pr):pr;
+      if(visited.has(head.id)) return;
+      visited.add(head.id);
       chain.push({person:head}); walkUp(head);
-    } else if(p.spouseOf) { walkUp(byId[p.spouseOf]); }
+    } else if(p.spouseOf && !p.parentId) {
+      // Hanya naik ke kepala keluarga jika TIDAK punya jalur kandung
+      const head=byId[p.spouseOf]; if(!head || visited.has(head.id)) return;
+      visited.add(head.id);
+      walkUp(head);
+    }
   }
   walkUp(cur); return chain;
 }
@@ -1659,7 +1669,19 @@ searchInput.addEventListener('focus', () => {
 searchInput.addEventListener('input',()=>{
   const q=searchInput.value.trim().toLowerCase(); chainPanel.classList.remove('open');
   if(!q){ showRecentInSearch(); return; }
-  const hits=persons.filter(p=>p.name.toLowerCase().includes(q)).slice(0,10);
+  // Deduplikasi: kalau nama sama, tampilkan hanya yang punya parentId (jalur kandung)
+  const allHits=persons.filter(p=>p.name.toLowerCase().includes(q));
+  const seen=new Map();
+  allHits.forEach(p=>{
+    const key=p.name.trim().toLowerCase();
+    if(!seen.has(key)) { seen.set(key,p); }
+    else {
+      // Prioritaskan yang punya parentId (anak kandung, bukan entri pasangan)
+      const prev=seen.get(key);
+      if(p.parentId && !prev.parentId) seen.set(key,p);
+    }
+  });
+  const hits=[...seen.values()].slice(0,10);
   sqList.innerHTML='';
   if(!hits.length){ sqList.innerHTML='<div class="sq-item" style="color:var(--ink4);cursor:default;font-style:italic;padding:12px 14px">Tidak ditemukan</div>'; searchDropdown.classList.add('open'); return; }
   hits.forEach(p=>sqList.appendChild(renderSearchItem(p)));
@@ -2200,7 +2222,10 @@ document.getElementById('mobile-search-inp').addEventListener('input', function(
   const list = document.getElementById('mobile-sq-list');
   list.innerHTML = '';
   if (!q) { showMobileRecent(); return; }
-  const hits = persons.filter(p => p.name.toLowerCase().includes(q)).slice(0, 12);
+  const allHitsM=persons.filter(p=>p.name.toLowerCase().includes(q));
+  const seenM=new Map();
+  allHitsM.forEach(p=>{ const k=p.name.trim().toLowerCase(); if(!seenM.has(k)){seenM.set(k,p);} else { const prev=seenM.get(k); if(p.parentId&&!prev.parentId) seenM.set(k,p); }});
+  const hits=[...seenM.values()].slice(0,12);
   if (!hits.length) {
     list.innerHTML = '<div style="padding:16px;text-align:center;color:var(--ink4);font-style:italic">Tidak ditemukan</div>';
     return;
