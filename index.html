@@ -546,6 +546,33 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
 .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 
 ::-webkit-scrollbar { width:6px; height:6px; }
+
+/* Parent searchable picker */
+.parent-group-label {
+  padding: 6px 12px 4px;
+  font-size: 0.62rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1.5px; color: #9a8060;
+  background: #fdf8f0; border-bottom: 1px solid #efe5d0;
+  position: sticky; top: 0; z-index: 1;
+}
+.parent-item {
+  padding: 9px 14px; cursor: pointer; font-size: 0.88rem;
+  color: #3d2e14; border-bottom: 1px solid #f5ede0;
+  display: flex; align-items: center; gap: 8px;
+  transition: background 0.1s;
+}
+.parent-item:hover, .parent-item.selected { background: #fdf4dc; }
+.parent-item .pi-badge {
+  width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.65rem; font-weight: 700;
+}
+.parent-item .pi-badge.M { background: #e8f4f2; color: #1a5c52; }
+.parent-item .pi-badge.F { background: #faedf1; color: #7a2040; }
+.parent-item .pi-name { flex: 1; }
+.parent-item .pi-gen { font-size: 0.7rem; color: #9a8060; flex-shrink: 0; }
+.parent-item.no-result { color: #9a8060; font-style: italic; cursor: default; }
+.parent-item.no-result:hover { background: none; }
 ::-webkit-scrollbar-track { background:var(--parch2); }
 ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
 ::-webkit-scrollbar-thumb:hover { background:var(--gold); }
@@ -1079,7 +1106,28 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
       </div>
       <div class="form-group">
         <label class="form-label">Anak dari / Pasangan dari</label>
-        <select class="form-select" id="f-parent"><option value="">— Pilih (opsional) —</option></select>
+        <div style="position:relative" id="parent-picker-wrap">
+          <div style="position:relative">
+            <input type="text" class="form-input" id="f-parent-search"
+              placeholder="🔍 Ketik nama atau scroll..."
+              autocomplete="off"
+              style="padding-right:36px"
+              oninput="filterParentList(this.value)"
+              onfocus="openParentList()"
+            >
+            <span id="f-parent-clear"
+              onclick="clearParentSearch()"
+              style="display:none;position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;color:#9a8060;font-size:0.9rem;padding:4px">✕</span>
+          </div>
+          <!-- hidden actual value -->
+          <input type="hidden" id="f-parent" value="">
+          <!-- dropdown list -->
+          <div id="parent-list"
+            style="display:none;position:absolute;z-index:900;width:100%;max-height:240px;overflow-y:auto;
+                   background:#fff;border:1.5px solid #d4c4a0;border-top:none;border-radius:0 0 8px 8px;
+                   box-shadow:0 8px 24px rgba(0,0,0,0.12)">
+          </div>
+        </div>
       </div>
       <div class="form-group">
         <label class="form-label">Catatan</label>
@@ -1649,34 +1697,118 @@ function openEditForm(id){
   document.getElementById('f-wifeorder').value=p.wifeOrder||'';
   document.getElementById('f-del-btn').style.display='block';
   populateParentSelect(p.parentId||p.spouseOf);
-  if(p.parentId) document.getElementById('f-parent').value=p.parentId;
-  else if(p.spouseOf) document.getElementById('f-parent').value=p.spouseOf;
+  if(p.parentId) { populateParentSelect(p.parentId); }
+  else if(p.spouseOf) { populateParentSelect(p.spouseOf); }
   document.getElementById('form-overlay').classList.add('open');
 }
-function populateParentSelect(selectedId){
+// ── Searchable parent picker ──
+let _parentData = []; // flat list for search
+
+function populateParentSelect(selectedId) {
   rebuildGen();
-  const sel=document.getElementById('f-parent');
-  sel.innerHTML='<option value="">— Pilih (opsional) —</option>';
+  _parentData = [];
   const validPersons = persons.filter(p => p.gen > 0);
   if (!validPersons.length) return;
-  const maxGen = Math.max(...validPersons.map(p=>p.gen), 1);
+  const maxGen = Math.max(...validPersons.map(p => p.gen), 1);
   for (let g = maxGen; g >= 1; g--) {
     const group = validPersons.filter(p => p.gen === g);
     if (!group.length) continue;
-    const optgroup = document.createElement('optgroup');
-    optgroup.label = `── Generasi ${g} (${group.length} orang) ──`;
-    // Terbaru ditambahkan = index terbesar di array persons → reverse
     [...group].reverse().forEach(p => {
-      const opt = document.createElement('option');
-      opt.value = p.id;
-      const spRole = p.spouseOf ? (p.wifeOrder > 1 ? ` · ${p.gender==='F'?'Istri':'Suami'} ke-${p.wifeOrder}` : ` · ${p.gender==='F'?'Istri':'Suami'} ke-1`) : '';
-      opt.textContent = `${p.name}${spRole}`;
-      if (p.id === selectedId) opt.selected = true;
-      optgroup.appendChild(opt);
+      const spRole = p.spouseOf ? ` (${p.gender==='F'?'Istri':'Suami'} ke-${p.wifeOrder||1})` : '';
+      _parentData.push({ id: p.id, name: p.name + spRole, gender: p.gender, gen: g });
     });
-    sel.appendChild(optgroup);
+  }
+  // Set initial value if editing
+  if (selectedId) {
+    const found = _parentData.find(x => x.id === selectedId);
+    if (found) {
+      document.getElementById('f-parent').value = selectedId;
+      document.getElementById('f-parent-search').value = found.name;
+      document.getElementById('f-parent-clear').style.display = '';
+    }
+  } else {
+    document.getElementById('f-parent').value = '';
+    document.getElementById('f-parent-search').value = '';
+    document.getElementById('f-parent-clear').style.display = 'none';
+  }
+  renderParentList('');
+}
+
+function renderParentList(query) {
+  const list = document.getElementById('parent-list');
+  const selectedId = document.getElementById('f-parent').value;
+  list.innerHTML = '';
+  const q = query.trim().toLowerCase();
+  
+  // Group by gen
+  const maxGen = _parentData.length ? Math.max(..._parentData.map(x=>x.gen)) : 0;
+  let totalShown = 0;
+  
+  for (let g = maxGen; g >= 1; g--) {
+    let group = _parentData.filter(x => x.gen === g);
+    if (q) group = group.filter(x => x.name.toLowerCase().includes(q));
+    if (!group.length) continue;
+    
+    const lbl = document.createElement('div');
+    lbl.className = 'parent-group-label';
+    lbl.textContent = `Generasi ${g} — ${group.length} orang`;
+    list.appendChild(lbl);
+    
+    group.forEach(item => {
+      const ini = item.name.replace(/^(KH\.|H\.|Hj\.|Nyai|Ny\.)\s*/i,'').split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase().substring(0,2);
+      const div = document.createElement('div');
+      div.className = 'parent-item' + (item.id === selectedId ? ' selected' : '');
+      div.innerHTML = `<div class="pi-badge ${item.gender}">${ini}</div><div class="pi-name">${item.name}</div><div class="pi-gen">Gen ${item.gen}</div>`;
+      div.onclick = () => selectParent(item.id, item.name);
+      list.appendChild(div);
+      totalShown++;
+    });
+  }
+  
+  if (totalShown === 0) {
+    const none = document.createElement('div');
+    none.className = 'parent-item no-result';
+    none.textContent = q ? `Tidak ada hasil untuk "${query}"` : '— Belum ada data —';
+    list.appendChild(none);
   }
 }
+
+function filterParentList(q) {
+  renderParentList(q);
+  openParentList();
+  // clear selected if user is typing new
+  document.getElementById('f-parent').value = '';
+  document.getElementById('f-parent-clear').style.display = q ? '' : 'none';
+}
+
+function openParentList() {
+  document.getElementById('parent-list').style.display = 'block';
+}
+
+function closeParentList() {
+  document.getElementById('parent-list').style.display = 'none';
+}
+
+function selectParent(id, name) {
+  document.getElementById('f-parent').value = id;
+  document.getElementById('f-parent-search').value = name;
+  document.getElementById('f-parent-clear').style.display = '';
+  closeParentList();
+}
+
+function clearParentSearch() {
+  document.getElementById('f-parent').value = '';
+  document.getElementById('f-parent-search').value = '';
+  document.getElementById('f-parent-clear').style.display = 'none';
+  renderParentList('');
+  document.getElementById('f-parent-search').focus();
+  openParentList();
+}
+
+// Close list when clicking outside
+document.addEventListener('click', e => {
+  if (!e.target.closest('#parent-picker-wrap')) closeParentList();
+});
 function saveForm(){
   const name=document.getElementById('f-name').value.trim(); if(!name){ showToast('Nama tidak boleh kosong!'); return; }
   const gender=document.getElementById('f-gender').value, note=document.getElementById('f-note').value.trim();
@@ -1687,7 +1819,14 @@ function saveForm(){
 }
 function deleteFromForm(){ if(editingId){closeForm();deletePerson(editingId);} }
 function deletePerson(id){ if(!confirm('Hapus anggota ini?')) return; persons=persons.filter(p=>p.id!==id); showToast('Anggota dihapus'); rebuildGen();render();updateStats(); saveToStorage(); }
-function closeForm(){ document.getElementById('form-overlay').classList.remove('open'); editingId=null; }
+function closeForm(){ 
+  document.getElementById('form-overlay').classList.remove('open'); 
+  editingId=null;
+  closeParentList();
+  document.getElementById('f-parent-search').value='';
+  document.getElementById('f-parent').value='';
+  document.getElementById('f-parent-clear').style.display='none';
+}
 
 // ════════════════════════════════════
 // EXCEL
