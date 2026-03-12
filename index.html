@@ -1669,19 +1669,29 @@ searchInput.addEventListener('focus', () => {
 searchInput.addEventListener('input',()=>{
   const q=searchInput.value.trim().toLowerCase(); chainPanel.classList.remove('open');
   if(!q){ showRecentInSearch(); return; }
-  // Deduplikasi: kalau nama sama, tampilkan hanya yang punya parentId (jalur kandung)
   const allHits=persons.filter(p=>p.name.toLowerCase().includes(q));
-  const seen=new Map();
+  // Deduplikasi: nama sama + salah satu hanya punya spouseOf → buang yang spouseOf saja
+  const dedupHits = [];
   allHits.forEach(p=>{
-    const key=p.name.trim().toLowerCase();
-    if(!seen.has(key)) { seen.set(key,p); }
-    else {
-      // Prioritaskan yang punya parentId (anak kandung, bukan entri pasangan)
-      const prev=seen.get(key);
-      if(p.parentId && !prev.parentId) seen.set(key,p);
+    const sameName = dedupHits.filter(x=>x.name.trim().toLowerCase()===p.name.trim().toLowerCase());
+    if(sameName.length===0){
+      dedupHits.push(p);
+    } else {
+      // Ada nama sama — kalau p punya parentId tapi existing hanya spouseOf → ganti
+      sameName.forEach(existing=>{
+        if(p.parentId && !existing.parentId && existing.spouseOf){
+          const idx=dedupHits.indexOf(existing);
+          dedupHits.splice(idx,1,p);
+        }
+        // kalau existing sudah punya parentId dan p hanya spouseOf → buang p (tidak push)
+      });
+      // Kalau keduanya punya parentId → ini memang dua orang berbeda, tampilkan dua
+      if(p.parentId && sameName.every(x=>x.parentId)){
+        dedupHits.push(p);
+      }
     }
   });
-  const hits=[...seen.values()].slice(0,10);
+  const hits=dedupHits.slice(0,10);
   sqList.innerHTML='';
   if(!hits.length){ sqList.innerHTML='<div class="sq-item" style="color:var(--ink4);cursor:default;font-style:italic;padding:12px 14px">Tidak ditemukan</div>'; searchDropdown.classList.add('open'); return; }
   hits.forEach(p=>sqList.appendChild(renderSearchItem(p)));
@@ -2223,9 +2233,16 @@ document.getElementById('mobile-search-inp').addEventListener('input', function(
   list.innerHTML = '';
   if (!q) { showMobileRecent(); return; }
   const allHitsM=persons.filter(p=>p.name.toLowerCase().includes(q));
-  const seenM=new Map();
-  allHitsM.forEach(p=>{ const k=p.name.trim().toLowerCase(); if(!seenM.has(k)){seenM.set(k,p);} else { const prev=seenM.get(k); if(p.parentId&&!prev.parentId) seenM.set(k,p); }});
-  const hits=[...seenM.values()].slice(0,12);
+  const dedupM=[];
+  allHitsM.forEach(p=>{
+    const same=dedupM.filter(x=>x.name.trim().toLowerCase()===p.name.trim().toLowerCase());
+    if(!same.length){ dedupM.push(p); }
+    else {
+      same.forEach(ex=>{ if(p.parentId&&!ex.parentId&&ex.spouseOf){ const i=dedupM.indexOf(ex); dedupM.splice(i,1,p); } });
+      if(p.parentId&&same.every(x=>x.parentId)) dedupM.push(p);
+    }
+  });
+  const hits=dedupM.slice(0,12);
   if (!hits.length) {
     list.innerHTML = '<div style="padding:16px;text-align:center;color:var(--ink4);font-style:italic">Tidak ditemukan</div>';
     return;
