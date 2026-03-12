@@ -1159,6 +1159,10 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
         <label class="form-label">Catatan</label>
         <textarea class="form-textarea" id="f-note" placeholder="Gelar, profesi, keterangan lain…"></textarea>
       </div>
+      <div class="form-group" id="f-order-wrap" style="display:none">
+        <label class="form-label">Urutan anak ke- <span style="font-weight:400;color:var(--ink4)">(untuk atur posisi di pohon)</span></label>
+        <input class="form-input" id="f-order" type="number" min="1" placeholder="cth: 1, 2, 3 …" style="width:120px">
+      </div>
       <div class="form-actions">
         <button class="btn btn-primary" onclick="saveForm()">💾 Simpan</button>
         <button class="btn btn-ghost" onclick="closeForm()">Batal</button>
@@ -1275,7 +1279,7 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
 // AUTH
 // ════════════════════════════════════
 const ADMIN_USER = 'admin';
-const ADMIN_PASS = 'umam';  // ← ganti password di sini
+const ADMIN_PASS = 'ramli2024';  // ← ganti password di sini
 
 let currentRole = null; // 'admin' | 'viewer'
 let activeTab = 'viewer';
@@ -1437,7 +1441,15 @@ function render() {
     const row=document.createElement('div'); row.className='gen-row'; row.dataset.gen=g;
     const mk=document.createElement('div'); mk.className='gen-marker'; mk.textContent=`Gen ${g}`;
     row.appendChild(mk);
-    persons.filter(p=>p.gen===g&&!p.spouseOf).forEach(h=>row.appendChild(makeCluster(h)));
+    // Sort by order field (jika ada), else by array position
+    const heads = persons.filter(p=>p.gen===g&&!p.spouseOf);
+    heads.sort((a,b)=>{
+      const ao = a.order != null ? a.order : 9999;
+      const bo = b.order != null ? b.order : 9999;
+      if(ao !== bo) return ao - bo;
+      return persons.indexOf(a) - persons.indexOf(b);
+    });
+    heads.forEach(h=>row.appendChild(makeCluster(h)));
     rows.appendChild(row);
   }
   updateGenNav(maxGen); setTimeout(drawLines,80);
@@ -1823,6 +1835,8 @@ function openAddForm(_,parentId){
   document.getElementById('f-gender').value='M';
   document.getElementById('f-wifeorder').value='';
   document.getElementById('f-del-btn').style.display='none';
+  document.getElementById('f-order-wrap').style.display='none';
+  document.getElementById('f-order').value='';
   // Jika tidak ada parentId (tambah dari tombol umum), pakai terakhir dipilih
   if (!parentId) {
     const last = getLastParent();
@@ -1842,6 +1856,9 @@ function openEditForm(id){
   document.getElementById('f-note').value=p.note;
   document.getElementById('f-wifeorder').value=p.wifeOrder||'';
   document.getElementById('f-del-btn').style.display='block';
+  // Tampilkan field urutan
+  document.getElementById('f-order-wrap').style.display='';
+  document.getElementById('f-order').value = p.order || '';
   populateParentSelect(p.parentId||p.spouseOf);
   if(p.parentId) { populateParentSelect(p.parentId); }
   else if(p.spouseOf) { populateParentSelect(p.spouseOf); }
@@ -1967,8 +1984,9 @@ function saveForm(){
   const name=document.getElementById('f-name').value.trim(); if(!name){ showToast('Nama tidak boleh kosong!'); return; }
   const gender=document.getElementById('f-gender').value, note=document.getElementById('f-note').value.trim();
   const wo=parseInt(document.getElementById('f-wifeorder').value)||null, refId=document.getElementById('f-parent').value;
-  if(editingId){ const p=persons.find(x=>x.id===editingId); p.name=name;p.gender=gender;p.note=note;p.wifeOrder=wo; if(refId){p.spouseOf=wo?refId:null;p.parentId=wo?null:refId;} showToast('Data diperbarui ✓'); }
-  else { const ref=refId?persons.find(x=>x.id===refId):null; persons.push({id:uid(),name,gender,note,parentId:(!wo&&ref)?ref.id:null,spouseOf:(wo&&ref)?ref.id:null,wifeOrder:wo,gen:0}); showToast('Anggota ditambahkan ✓'); }
+  const orderVal=parseInt(document.getElementById('f-order').value)||null;
+  if(editingId){ const p=persons.find(x=>x.id===editingId); p.name=name;p.gender=gender;p.note=note;p.wifeOrder=wo;p.order=orderVal; if(refId){p.spouseOf=wo?refId:null;p.parentId=wo?null:refId;} showToast('Data diperbarui ✓'); }
+  else { const ref=refId?persons.find(x=>x.id===refId):null; persons.push({id:uid(),name,gender,note,parentId:(!wo&&ref)?ref.id:null,spouseOf:(wo&&ref)?ref.id:null,wifeOrder:wo,order:null,gen:0}); showToast('Anggota ditambahkan ✓'); }
   closeForm(); rebuildGen(); render(); updateStats(); saveToStorage();
 }
 function deleteFromForm(){ if(editingId){closeForm();deletePerson(editingId);} }
