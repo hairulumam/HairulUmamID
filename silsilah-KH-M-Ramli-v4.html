@@ -1,0 +1,1372 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Silsilah KH. M Ramli</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600&display=swap');
+
+:root {
+  --parch:       #fdf8f0;
+  --parch2:      #f7f0e3;
+  --parch3:      #efe5d0;
+  --ink:         #1e1609;
+  --ink2:        #3d2e14;
+  --ink3:        #6b5738;
+  --ink4:        #9a8060;
+  --gold:        #8b6914;
+  --gold2:       #b8860b;
+  --gold3:       #d4a017;
+  --gold-light:  #f5e6c0;
+  --gold-bg:     #fdf4dc;
+  --teal:        #1a5c52;
+  --teal2:       #2d7a6e;
+  --teal-light:  #e8f4f2;
+  --rose:        #7a2040;
+  --rose2:       #a0304e;
+  --rose-light:  #faedf1;
+  --border:      #d4c4a0;
+  --border2:     #e8dcc0;
+  --shadow:      rgba(139,105,20,0.12);
+  --shadow2:     rgba(30,22,9,0.08);
+  --card-w:      136px;
+  --gap-x:       20px;
+  --gap-y:       72px;
+}
+
+* { box-sizing:border-box; margin:0; padding:0; }
+html,body { height:100%; overflow:hidden; }
+
+body {
+  background: var(--parch2);
+  font-family: 'Source Sans 3', sans-serif;
+  color: var(--ink);
+  display: flex; flex-direction: column; height: 100vh;
+}
+
+/* ════════════════════════════════════
+   LOGIN SCREEN
+   ════════════════════════════════════ */
+#login-screen {
+  display: flex;
+  position: fixed; inset: 0; z-index: 9999;
+  background: linear-gradient(145deg, #0d2218 0%, #1a3a30 50%, #0a1c12 100%);
+  align-items: center; justify-content: center;
+  flex-direction: column;
+  gap: 0;
+}
+
+.login-bg-pattern {
+  position: absolute; inset: 0; pointer-events: none; overflow: hidden;
+}
+.login-bg-pattern::before {
+  content: '';
+  position: absolute; inset: -50%;
+  background-image:
+    repeating-linear-gradient(45deg, rgba(212,160,23,0.04) 0px, rgba(212,160,23,0.04) 1px, transparent 1px, transparent 60px),
+    repeating-linear-gradient(-45deg, rgba(212,160,23,0.04) 0px, rgba(212,160,23,0.04) 1px, transparent 1px, transparent 60px);
+}
+
+.login-card {
+  background: #fff;
+  border-radius: 16px;
+  width: 380px;
+  max-width: 95vw;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.4), 0 0 0 1px rgba(212,160,23,0.15);
+  overflow: hidden;
+  position: relative;
+  animation: loginFadeIn 0.4s ease;
+}
+
+@keyframes loginFadeIn {
+  from { opacity:0; transform: translateY(20px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+
+.login-header {
+  background: linear-gradient(135deg, #1a3a30, #1e4a3e);
+  padding: 32px 28px 28px;
+  text-align: center;
+  border-bottom: 3px solid var(--gold2);
+  position: relative;
+}
+.login-ornament {
+  font-size: 2.4rem; color: var(--gold3); line-height: 1; margin-bottom: 12px;
+  filter: drop-shadow(0 0 12px rgba(212,160,23,0.5));
+  display: block;
+}
+.login-title {
+  font-family: 'Lora', serif; font-size: 1.3rem; font-weight: 700;
+  color: #f5e6c0; line-height: 1.3;
+}
+.login-subtitle {
+  font-size: 0.72rem; color: rgba(212,160,23,0.75);
+  letter-spacing: 2.5px; text-transform: uppercase; margin-top: 6px;
+}
+
+.login-body { padding: 28px 28px 24px; }
+
+.role-tabs {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 0; border: 1.5px solid var(--border); border-radius: 8px;
+  overflow: hidden; margin-bottom: 22px;
+}
+.role-tab {
+  padding: 10px; text-align: center; cursor: pointer;
+  font-size: 0.85rem; font-weight: 500; transition: all 0.2s;
+  color: var(--ink4); background: var(--parch2);
+  border: none; outline: none;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.role-tab:first-child { border-right: 1.5px solid var(--border); }
+.role-tab.active { background: var(--teal); color: #fff; }
+.role-tab .tab-icon { font-size: 1rem; }
+
+.login-hint {
+  background: var(--gold-bg); border: 1px solid var(--gold-light);
+  border-radius: 6px; padding: 10px 14px; margin-bottom: 18px;
+  font-size: 0.78rem; color: var(--gold); line-height: 1.6;
+}
+.login-hint strong { color: var(--gold2); }
+
+.form-group-l { margin-bottom: 14px; }
+.form-label-l {
+  display: block; font-size: 0.72rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 1px;
+  color: var(--ink4); margin-bottom: 6px;
+}
+.form-input-l {
+  width: 100%; padding: 10px 14px;
+  border: 1.5px solid var(--border); border-radius: 7px;
+  font-family: 'Source Sans 3', sans-serif; font-size: 0.92rem;
+  color: var(--ink); background: var(--parch2); outline: none;
+  transition: all 0.2s;
+}
+.form-input-l:focus { border-color: var(--teal2); background: #fff; box-shadow: 0 0 0 3px rgba(45,122,110,0.1); }
+
+.login-err {
+  font-size: 0.8rem; color: #c0392b;
+  background: #fdf0f0; border: 1px solid #f5c6c6;
+  border-radius: 5px; padding: 8px 12px; margin-bottom: 14px;
+  display: none;
+}
+.login-err.show { display: block; }
+
+.login-btn {
+  width: 100%; padding: 11px;
+  background: var(--teal); border: none; border-radius: 7px;
+  color: #fff; font-family: 'Source Sans 3', sans-serif;
+  font-size: 0.95rem; font-weight: 600; cursor: pointer;
+  transition: all 0.2s; letter-spacing: 0.5px;
+}
+.login-btn:hover { background: var(--teal2); }
+.login-btn:active { transform: scale(0.98); }
+
+.login-viewer-btn {
+  width: 100%; padding: 11px; margin-top: 10px;
+  background: transparent; border: 1.5px solid var(--border); border-radius: 7px;
+  color: var(--ink3); font-family: 'Source Sans 3', sans-serif;
+  font-size: 0.9rem; cursor: pointer; transition: all 0.2s;
+}
+.login-viewer-btn:hover { border-color: var(--teal2); color: var(--teal); background: var(--teal-light); }
+
+.login-footer {
+  padding: 14px 28px 20px;
+  text-align: center; font-size: 0.72rem; color: var(--ink4);
+  border-top: 1px solid var(--border2);
+}
+
+/* ═══════════════ HEADER ═══════════════ */
+.header {
+  background: linear-gradient(135deg, #1a3a30 0%, #1e4a3e 40%, #0f2820 100%);
+  flex-shrink: 0; position: relative; z-index: 50;
+  box-shadow: 0 2px 20px rgba(0,0,0,0.25);
+}
+.header-top {
+  display: flex; align-items: center; padding: 0 24px;
+  min-height: 64px; gap: 16px;
+  border-bottom: 1px solid rgba(212,160,23,0.25);
+}
+.header-ornament {
+  font-size: 1.6rem; color: var(--gold3); flex-shrink: 0; line-height: 1;
+  filter: drop-shadow(0 0 6px rgba(212,160,23,0.5));
+}
+.header-titles { flex: 0 0 auto; }
+.header-main {
+  font-family: 'Lora', serif; font-size: 1.2rem; font-weight: 700;
+  color: #f5e6c0; letter-spacing: 0.5px; line-height: 1.2;
+}
+.header-sub {
+  font-size: 0.7rem; color: rgba(212,160,23,0.8);
+  letter-spacing: 2px; text-transform: uppercase; margin-top: 1px;
+}
+.header-divider { width:1px; height:36px; background:rgba(212,160,23,0.25); flex-shrink:0; }
+
+/* role badge in header */
+.role-badge {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;
+  flex-shrink: 0;
+}
+.role-badge.admin { background: rgba(212,160,23,0.2); color: var(--gold3); border: 1px solid rgba(212,160,23,0.35); }
+.role-badge.viewer { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.15); }
+
+/* Search */
+.search-wrap { flex:1; max-width:360px; position:relative; }
+.search-input {
+  width:100%; background:rgba(255,255,255,0.08); border:1px solid rgba(212,160,23,0.3);
+  border-radius:6px; padding:8px 14px 8px 38px; color:#f5e6c0;
+  font-family:'Source Sans 3',sans-serif; font-size:0.9rem; outline:none; transition:all 0.2s;
+}
+.search-input::placeholder { color:rgba(212,160,23,0.5); }
+.search-input:focus { background:rgba(255,255,255,0.13); border-color:rgba(212,160,23,0.6); }
+.search-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:rgba(212,160,23,0.6); font-size:0.9rem; }
+
+.search-dropdown {
+  display:none; position:absolute; top:calc(100% + 6px); left:0; right:0;
+  background:#fff; border:1px solid var(--border); border-radius:8px;
+  z-index:300; box-shadow:0 8px 32px rgba(0,0,0,0.15); overflow:hidden;
+}
+.search-dropdown.open { display:block; }
+.sq-list { max-height:220px; overflow-y:auto; }
+.sq-item {
+  padding:10px 14px; cursor:pointer; border-bottom:1px solid var(--border2);
+  display:flex; align-items:center; gap:10px; transition:background 0.12s;
+}
+.sq-item:last-child { border-bottom:none; }
+.sq-item:hover,.sq-item.active { background:var(--gold-bg); }
+.si-badge {
+  width:30px; height:30px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:0.75rem; font-weight:700; flex-shrink:0;
+}
+.si-badge.M { background:var(--teal-light); color:var(--teal); border:1.5px solid #b0d8d2; }
+.si-badge.F { background:var(--rose-light); color:var(--rose); border:1.5px solid #e4b8c8; }
+.si-info { flex:1; min-width:0; }
+.si-name { font-size:0.88rem; font-weight:600; color:var(--ink); }
+.si-chain { font-size:0.72rem; color:var(--ink4); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-style:italic; }
+
+.chain-panel {
+  display:none; padding:18px 20px 20px;
+  background:linear-gradient(180deg,var(--gold-bg) 0%,#fff 100%);
+  border-top:2px solid var(--gold-light);
+}
+.chain-panel.open { display:block; }
+.cp-header { margin-bottom:14px; }
+.cp-name { font-family:'Lora',serif; font-size:1.1rem; font-weight:700; color:var(--ink2); }
+.cp-sub { font-size:0.75rem; color:var(--ink4); margin-top:2px; }
+.chain-steps { display:flex; flex-direction:column; gap:0; }
+.chain-step { display:flex; align-items:stretch; gap:10px; }
+.chain-step-left { display:flex; flex-direction:column; align-items:center; width:28px; flex-shrink:0; }
+.chain-num {
+  width:24px; height:24px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:0.65rem; font-weight:700; font-family:'Lora',serif;
+  background:var(--parch3); color:var(--ink3); border:1.5px solid var(--border);
+}
+.chain-num.self-num { background:var(--gold2); color:#fff; border-color:var(--gold); }
+.chain-vline { flex:1; width:1.5px; background:var(--border); margin:2px 0; min-height:8px; }
+.chain-card-wrap { flex:1; padding-bottom:8px; }
+.chain-card {
+  border-radius:6px; padding:8px 12px; border:1px solid; cursor:pointer;
+  transition:all 0.15s; display:flex; align-items:center; gap:8px;
+}
+.chain-card.M { background:var(--teal-light); border-color:#b0d8d2; }
+.chain-card.F { background:var(--rose-light); border-color:#e0b8c4; }
+.chain-card:hover { box-shadow:0 3px 12px var(--shadow); transform:translateX(2px); }
+.cc-info { flex:1; min-width:0; }
+.cc-connector { font-size:0.7rem; color:var(--ink4); font-style:italic; }
+.cc-name { font-size:0.88rem; font-weight:600; color:var(--ink2); }
+.cc-meta { font-size:0.7rem; color:var(--ink4); margin-top:1px; }
+.nasab-full {
+  margin-top:14px; padding:12px 14px;
+  background:var(--gold-bg); border:1px solid var(--gold-light);
+  border-left:3px solid var(--gold2); border-radius:4px;
+}
+.nasab-label { font-size:0.65rem; letter-spacing:2px; text-transform:uppercase; color:var(--gold2); margin-bottom:5px; font-weight:600; }
+.nasab-text { font-family:'Lora',serif; font-size:0.92rem; color:var(--ink2); line-height:1.7; font-style:italic; }
+.cp-actions { display:flex; gap:8px; margin-top:14px; }
+
+.header-btns { display:flex; gap:8px; flex-shrink:0; margin-left:auto; align-items:center; }
+.hbtn {
+  background:rgba(255,255,255,0.08); border:1px solid rgba(212,160,23,0.3); color:#f0e0b0;
+  padding:7px 14px; border-radius:5px; cursor:pointer;
+  font-family:'Source Sans 3',sans-serif; font-size:0.82rem; font-weight:500;
+  transition:all 0.2s; white-space:nowrap; display:flex; align-items:center; gap:6px;
+}
+.hbtn:hover { background:rgba(212,160,23,0.2); border-color:rgba(212,160,23,0.6); color:#f5e6c0; }
+.hbtn.accent { background:var(--gold2); border-color:var(--gold); color:#fff; }
+.hbtn.accent:hover { background:var(--gold3); }
+.hbtn.logout { background:rgba(192,57,43,0.15); border-color:rgba(192,57,43,0.35); color:#f0a090; }
+.hbtn.logout:hover { background:rgba(192,57,43,0.3); }
+.header-zoom { display:flex; align-items:center; gap:2px; background:rgba(0,0,0,0.2); border-radius:5px; padding:2px; }
+.zoom-btn2 {
+  width:28px; height:28px; background:transparent; border:none;
+  color:rgba(212,160,23,0.7); cursor:pointer; border-radius:3px; font-size:1rem;
+  display:flex; align-items:center; justify-content:center; transition:all 0.15s;
+}
+.zoom-btn2:hover { background:rgba(212,160,23,0.15); color:#f5e6c0; }
+
+/* ═══════════════ LAYOUT ═══════════════ */
+.main { flex:1; display:flex; overflow:hidden; }
+
+/* ═══════════════ SIDEBAR ═══════════════ */
+.sidebar {
+  width:235px; background:#fff; border-right:1px solid var(--border);
+  display:flex; flex-direction:column; flex-shrink:0; overflow:hidden;
+  box-shadow:2px 0 12px var(--shadow2);
+}
+.sidebar-section { border-bottom:1px solid var(--border2); }
+.sidebar-section-head {
+  padding:10px 16px 8px; font-size:0.65rem; letter-spacing:2.5px;
+  text-transform:uppercase; color:var(--ink4); font-weight:600;
+  display:flex; align-items:center; gap:8px;
+}
+.sidebar-section-head::after { content:''; flex:1; height:1px; background:var(--border2); }
+.stats-grid { display:grid; grid-template-columns:1fr 1fr; }
+.stat-cell {
+  padding:12px 14px; text-align:center;
+  border-right:1px solid var(--border2); border-bottom:1px solid var(--border2);
+}
+.stat-cell:nth-child(even) { border-right:none; }
+.stat-cell:nth-child(3),.stat-cell:nth-child(4) { border-bottom:none; }
+.stat-num { font-family:'Lora',serif; font-size:1.8rem; font-weight:700; color:var(--gold2); line-height:1; }
+.stat-lbl { font-size:0.68rem; color:var(--ink4); margin-top:3px; text-transform:uppercase; letter-spacing:0.5px; }
+.legend-list { padding:10px 16px 12px; }
+.leg-item { display:flex; align-items:center; gap:9px; font-size:0.82rem; color:var(--ink3); margin-bottom:8px; }
+.leg-swatch { width:28px; height:18px; border-radius:4px; border:1.5px solid; flex-shrink:0; }
+.leg-ring { width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.58rem; font-weight:700; flex-shrink:0; }
+.gen-nav-list { flex:1; overflow-y:auto; }
+.gen-nav-item {
+  padding:9px 16px; cursor:pointer; display:flex; align-items:center; gap:10px;
+  font-size:0.84rem; color:var(--ink3); border-left:3px solid transparent; transition:all 0.15s;
+}
+.gen-nav-item:hover { background:var(--parch2); color:var(--ink); }
+.gen-nav-item.active { border-left-color:var(--gold2); background:var(--gold-bg); color:var(--gold); font-weight:600; }
+.gen-dot { width:8px; height:8px; border-radius:50%; background:var(--border); flex-shrink:0; }
+.gen-nav-item.active .gen-dot { background:var(--gold2); }
+.gen-count { margin-left:auto; font-size:0.72rem; color:var(--ink4); font-weight:400; }
+
+/* gen filter pills */
+.gen-pill {
+  padding:3px 8px; border-radius:12px; font-size:0.68rem; font-weight:600;
+  border:1.5px solid var(--border); background:var(--parch2); color:var(--ink4);
+  cursor:pointer; transition:all 0.15s; font-family:'Source Sans 3',sans-serif;
+}
+.gen-pill:hover { border-color:var(--gold2); color:var(--gold2); }
+.gen-pill.active { background:var(--gold2); border-color:var(--gold); color:#fff; }
+
+/* clickable stat */
+.clickable-stat { cursor:pointer; transition:background 0.15s; }
+.clickable-stat:hover { background:var(--gold-bg); }
+.clickable-stat.filtered { background:var(--gold-bg); }
+.clickable-stat.filtered .stat-num { color:var(--gold) !important; }
+
+/* admin-only sidebar section */
+.import-btn-wrap { padding:12px 16px; }
+.import-label {
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  border:1.5px dashed var(--border); border-radius:6px; padding:10px;
+  cursor:pointer; font-size:0.8rem; color:var(--ink4); transition:all 0.2s;
+}
+.import-label:hover { border-color:var(--teal2); color:var(--teal); background:var(--teal-light); }
+#file-input { display:none; }
+
+/* viewer info strip */
+.viewer-strip {
+  padding:12px 16px; background:var(--gold-bg); border-top:1px solid var(--gold-light);
+  text-align:center;
+}
+.viewer-strip-text { font-size:0.75rem; color:var(--gold); line-height:1.5; }
+
+/* ═══════════════ CANVAS ═══════════════ */
+.canvas-wrap { flex:1; overflow:auto; position:relative; background:var(--parch2); }
+.canvas-wrap::before {
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background-image: radial-gradient(circle,var(--border2) 1px,transparent 1px);
+  background-size:32px 32px; opacity:0.5;
+}
+#tree-root {
+  position:relative; padding:48px 60px 100px; min-width:3200px;
+  transform-origin:top left; transition:transform 0.15s;
+}
+svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; overflow:visible; }
+
+/* ═══════════════ TREE ═══════════════ */
+.gen-row { display:flex; align-items:flex-start; gap:var(--gap-x); margin-bottom:var(--gap-y); flex-wrap:nowrap; }
+.gen-marker {
+  flex-shrink:0; writing-mode:vertical-rl; transform:rotate(180deg);
+  font-size:0.62rem; letter-spacing:3px; text-transform:uppercase; color:var(--ink4); font-weight:600;
+  padding-top:10px; align-self:stretch; display:flex; align-items:center;
+  border-right:1.5px solid var(--border2); padding-right:8px; margin-right:4px;
+}
+.family-cluster { display:flex; flex-direction:column; align-items:center; }
+.couple-block { display:flex; align-items:flex-start; gap:4px; }
+.wife-column { display:flex; flex-direction:column; gap:6px; }
+.marriage-node { display:flex; align-items:center; gap:4px; }
+.marry-ring {
+  width:22px; height:22px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:0.65rem; font-weight:700; flex-shrink:0; cursor:help;
+}
+.marry-ring.first { background:var(--gold2); color:#fff; box-shadow:0 2px 8px rgba(184,134,11,0.3); }
+.marry-ring.second { background:#fff; border:2px solid var(--gold2); color:var(--gold2); }
+.marry-ring.third { background:#fff; border:2px dashed var(--gold); color:var(--gold); opacity:0.85; }
+
+.pcard {
+  width:var(--card-w); border-radius:8px; padding:10px 8px 9px;
+  border:1.5px solid; cursor:pointer;
+  transition:transform 0.18s, box-shadow 0.18s;
+  position:relative; flex-shrink:0; background:#fff;
+}
+.pcard:hover { transform:translateY(-4px); box-shadow:0 12px 32px var(--shadow),0 4px 12px var(--shadow2); z-index:10; }
+.pcard.M { border-color:#9ecec8; background:linear-gradient(145deg,#fff 0%,var(--teal-light) 100%); }
+.pcard.F { border-color:#e4b8c8; background:linear-gradient(145deg,#fff 0%,var(--rose-light) 100%); }
+.pcard.highlight { box-shadow:0 0 0 3px var(--gold2),0 8px 28px rgba(184,134,11,0.3)!important; transform:translateY(-5px); }
+.pcard-icon {
+  width:36px; height:36px; border-radius:50%; margin:0 auto 7px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:0.8rem; font-weight:700; font-family:'Lora',serif;
+}
+.pcard.M .pcard-icon { background:var(--teal-light); color:var(--teal); border:2px solid #b0d8d2; }
+.pcard.F .pcard-icon { background:var(--rose-light); color:var(--rose); border:2px solid #e0b8c4; }
+.pcard-name { font-family:'Lora',serif; font-size:0.68rem; font-weight:600; color:var(--ink2); text-align:center; line-height:1.35; }
+.pcard-tag { font-size:0.55rem; text-align:center; margin-top:5px; padding:2px 7px; border-radius:20px; background:rgba(184,134,11,0.12); color:var(--gold); font-weight:500; }
+
+/* ═══════════════ MODALS ═══════════════ */
+.overlay {
+  display:none; position:fixed; inset:0;
+  background:rgba(30,22,9,0.45); backdrop-filter:blur(3px);
+  z-index:500; align-items:center; justify-content:center;
+}
+.overlay.open { display:flex; }
+.modal {
+  background:#fff; border:1px solid var(--border); border-radius:12px;
+  width:520px; max-width:95vw; max-height:90vh; overflow-y:auto;
+  box-shadow:0 24px 60px rgba(0,0,0,0.18); position:relative;
+}
+.modal-header {
+  padding:22px 26px 18px; border-bottom:1px solid var(--border2);
+  background:linear-gradient(135deg,var(--gold-bg) 0%,#fff 60%);
+  border-radius:12px 12px 0 0; position:relative;
+}
+.modal-close {
+  position:absolute; top:16px; right:18px;
+  background:var(--parch3); border:none; width:28px; height:28px;
+  border-radius:50%; cursor:pointer; color:var(--ink3);
+  font-size:0.9rem; display:flex; align-items:center; justify-content:center; transition:all 0.15s;
+}
+.modal-close:hover { background:var(--border); color:var(--ink); }
+.modal-title { font-family:'Lora',serif; font-size:1.4rem; font-weight:700; color:var(--ink2); padding-right:36px; }
+.modal-sub { font-size:0.78rem; color:var(--ink4); margin-top:4px; }
+.modal-body { padding:22px 26px 26px; }
+
+.nasab-chain-box {
+  background:linear-gradient(135deg,var(--gold-bg),var(--parch2));
+  border:1px solid var(--gold-light); border-left:4px solid var(--gold2);
+  border-radius:6px; padding:14px 16px; margin-bottom:18px;
+}
+.ncb-label { font-size:0.65rem; letter-spacing:2px; text-transform:uppercase; color:var(--gold); font-weight:700; margin-bottom:10px; }
+.ncb-steps { display:flex; flex-direction:column; gap:5px; }
+.ncb-row { display:flex; align-items:center; gap:8px; }
+.ncb-badge {
+  width:22px; height:22px; border-radius:50%; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  font-size:0.62rem; font-weight:700;
+  background:var(--parch3); color:var(--ink3); border:1px solid var(--border);
+}
+.ncb-badge.self { background:var(--gold2); color:#fff; border-color:var(--gold); }
+.ncb-name { font-size:0.88rem; color:var(--ink2); cursor:pointer; font-family:'Lora',serif; }
+.ncb-name:hover { color:var(--teal); text-decoration:underline; }
+.ncb-connector { font-size:0.72rem; color:var(--ink4); font-style:italic; padding-left:30px; }
+.detail-grid { display:flex; flex-direction:column; gap:10px; }
+.detail-row { display:flex; gap:12px; font-size:0.88rem; }
+.detail-lbl { min-width:96px; color:var(--ink4); flex-shrink:0; font-size:0.78rem; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; padding-top:1px; }
+.detail-val { color:var(--ink2); line-height:1.5; }
+.modal-divider { border:none; border-top:1px solid var(--border2); margin:18px 0; }
+.modal-actions { display:flex; gap:8px; flex-wrap:wrap; }
+
+/* Form modal */
+.form-overlay {
+  display:none; position:fixed; inset:0;
+  background:rgba(30,22,9,0.5); backdrop-filter:blur(3px);
+  z-index:600; align-items:center; justify-content:center;
+}
+.form-overlay.open { display:flex; }
+.form-modal {
+  background:#fff; border:1px solid var(--border); border-radius:12px;
+  width:500px; max-width:95vw; max-height:92vh; overflow-y:auto;
+  box-shadow:0 24px 60px rgba(0,0,0,0.2); position:relative;
+}
+.form-header {
+  padding:20px 24px 16px;
+  background:linear-gradient(135deg,var(--teal-light) 0%,#fff 60%);
+  border-bottom:1px solid var(--border2); border-radius:12px 12px 0 0;
+}
+.form-title { font-family:'Lora',serif; font-size:1.2rem; font-weight:700; color:var(--teal); }
+.form-body { padding:20px 24px 24px; }
+.form-group { margin-bottom:14px; }
+.form-label { display:block; font-size:0.72rem; letter-spacing:1px; text-transform:uppercase; color:var(--ink4); font-weight:600; margin-bottom:6px; }
+.form-input,.form-select,.form-textarea {
+  width:100%; background:var(--parch2); border:1.5px solid var(--border);
+  border-radius:6px; padding:8px 12px; color:var(--ink);
+  font-family:'Source Sans 3',sans-serif; font-size:0.92rem; outline:none; transition:all 0.2s;
+}
+.form-input:focus,.form-select:focus,.form-textarea:focus { border-color:var(--teal2); background:#fff; box-shadow:0 0 0 3px rgba(45,122,110,0.1); }
+.form-textarea { min-height:68px; resize:vertical; }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.form-actions { display:flex; gap:8px; margin-top:20px; }
+
+/* Buttons */
+.btn { border-radius:6px; padding:8px 16px; cursor:pointer; font-family:'Source Sans 3',sans-serif; font-size:0.85rem; font-weight:500; transition:all 0.2s; border:1.5px solid; display:inline-flex; align-items:center; gap:6px; }
+.btn-primary { background:var(--teal); border-color:var(--teal); color:#fff; }
+.btn-primary:hover { background:var(--teal2); }
+.btn-ghost { background:transparent; border-color:var(--border); color:var(--ink3); }
+.btn-ghost:hover { background:var(--parch2); border-color:var(--ink4); color:var(--ink); }
+.btn-danger { background:transparent; border-color:#e0b4b4; color:#c0392b; }
+.btn-danger:hover { background:#fdf0f0; }
+.btn-gold { background:var(--gold2); border-color:var(--gold); color:#fff; }
+.btn-gold:hover { background:var(--gold3); }
+.btn-teal-ghost { background:transparent; border-color:var(--teal2); color:var(--teal); }
+.btn-teal-ghost:hover { background:var(--teal-light); }
+
+/* Toast */
+.toast {
+  position:fixed; bottom:28px; left:50%;
+  transform:translateX(-50%) translateY(16px);
+  background:var(--teal); color:#fff; border-radius:8px; padding:10px 22px;
+  font-size:0.88rem; font-weight:500;
+  opacity:0; pointer-events:none; transition:all 0.3s; z-index:9998;
+  box-shadow:0 4px 20px rgba(26,92,82,0.4);
+}
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+::-webkit-scrollbar { width:6px; height:6px; }
+::-webkit-scrollbar-track { background:var(--parch2); }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+::-webkit-scrollbar-thumb:hover { background:var(--gold); }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     LOGIN SCREEN
+     ═══════════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-bg-pattern"></div>
+  <div class="login-card">
+    <div class="login-header">
+      <span class="login-ornament">☽</span>
+      <div class="login-title">Silsilah KH. M Ramli</div>
+      <div class="login-subtitle">Pohon Keturunan &amp; Nasab Keluarga</div>
+    </div>
+    <div class="login-body">
+      <div class="role-tabs">
+        <button class="role-tab active" id="tab-viewer" onclick="switchTab('viewer')">
+          <span class="tab-icon">👁️</span> Lihat Saja
+        </button>
+        <button class="role-tab" id="tab-admin" onclick="switchTab('admin')">
+          <span class="tab-icon">🔐</span> Administrator
+        </button>
+      </div>
+
+      <div id="viewer-section">
+        <div class="login-hint">
+          <strong>Mode Viewer</strong> — lihat pohon silsilah, cari nasab bin/binti, tanpa bisa mengubah data.
+        </div>
+        <button class="login-btn" onclick="enterViewer()">👁️ Lihat Silsilah</button>
+      </div>
+
+      <div id="admin-section" style="display:none">
+        <div class="login-hint">
+          <strong>Mode Admin</strong> — akses penuh untuk tambah, edit, hapus anggota, dan import/export Excel.
+        </div>
+        <div class="form-group-l">
+          <label class="form-label-l">Username</label>
+          <input class="form-input-l" id="l-user" value="admin" placeholder="Username">
+        </div>
+        <div class="form-group-l">
+          <label class="form-label-l">Password</label>
+          <input class="form-input-l" id="l-pass" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()">
+        </div>
+        <div class="login-err" id="login-err">Username atau password salah.</div>
+        <button class="login-btn" onclick="doLogin()">🔓 Masuk sebagai Admin</button>
+      </div>
+    </div>
+    <div class="login-footer">
+      Sistem Silsilah Keluarga &bull; Hanya admin yang dapat mengubah data
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     APP
+     ═══════════════════════════════════════ -->
+<div id="app" style="display:none;flex-direction:column;height:100%">
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-top">
+    <div class="header-ornament">☽</div>
+    <div class="header-titles">
+      <div class="header-main">Silsilah KH. M Ramli</div>
+      <div class="header-sub">Pohon Keturunan &amp; Nasab Keluarga</div>
+    </div>
+    <div class="header-divider"></div>
+
+    <!-- Role badge -->
+    <div class="role-badge" id="role-badge"></div>
+
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" id="search" placeholder="Ketik nama — tampil rantai bin/binti…" autocomplete="off">
+      <div class="search-dropdown" id="search-dropdown">
+        <div class="sq-list" id="sq-list"></div>
+        <div class="chain-panel" id="chain-panel">
+          <div class="cp-header">
+            <div class="cp-name" id="cp-name"></div>
+            <div class="cp-sub" id="cp-sub"></div>
+          </div>
+          <div class="chain-steps" id="cp-steps"></div>
+          <div class="cp-actions">
+            <button class="btn btn-primary" id="cp-detail-btn" style="font-size:0.8rem;padding:6px 12px">📋 Detail</button>
+            <button class="btn btn-teal-ghost admin-only" id="cp-add-btn" style="font-size:0.8rem;padding:6px 12px">＋ Tambah Anak</button>
+            <button class="btn btn-ghost" onclick="closeChainPanel()" style="font-size:0.8rem;padding:6px 12px">✕</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="header-btns">
+      <button class="hbtn accent admin-only" onclick="openAddForm(null)">＋ Tambah</button>
+      <button class="hbtn admin-only" onclick="exportExcel()">↓ Excel</button>
+      <div class="header-zoom">
+        <button class="zoom-btn2" onclick="zoom(-0.1)">−</button>
+        <button class="zoom-btn2" onclick="resetZoom()">⊡</button>
+        <button class="zoom-btn2" onclick="zoom(0.1)">＋</button>
+      </div>
+      <button class="hbtn logout" onclick="doLogout()">⬅ Keluar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-section-head">Statistik</div>
+      <!-- Gen filter pills -->
+      <div style="padding:8px 14px 4px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;">
+        <span style="font-size:0.65rem;color:var(--ink4);font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-right:2px;">Filter:</span>
+        <button class="gen-pill active" id="pill-all" onclick="setGenFilter('all')">Semua</button>
+        <div id="gen-pills" style="display:flex;flex-wrap:wrap;gap:4px;"></div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-cell clickable-stat" onclick="setGenFilter('all')" title="Klik untuk reset filter">
+          <div class="stat-num" id="st-total">0</div>
+          <div class="stat-lbl">Anggota</div>
+        </div>
+        <div class="stat-cell" style="cursor:default">
+          <div class="stat-num" id="st-gen">0</div>
+          <div class="stat-lbl" id="st-gen-lbl">Generasi</div>
+        </div>
+        <div class="stat-cell clickable-stat" title="Klik untuk filter laki-laki" onclick="cycleGenderFilter('M')">
+          <div class="stat-num" id="st-male" style="color:var(--teal)">0</div>
+          <div class="stat-lbl">Laki-laki ♂</div>
+        </div>
+        <div class="stat-cell clickable-stat" title="Klik untuk filter perempuan" onclick="cycleGenderFilter('F')">
+          <div class="stat-num" id="st-female" style="color:var(--rose)">0</div>
+          <div class="stat-lbl">Perempuan ♀</div>
+        </div>
+      </div>
+      <!-- active filter info -->
+      <div id="filter-info" style="display:none;padding:6px 14px 8px;font-size:0.72rem;color:var(--teal);background:var(--teal-light);border-top:1px solid #b0d8d2;display:flex;align-items:center;gap:6px;">
+        <span id="filter-info-text"></span>
+        <button onclick="setGenFilter('all');setGenderFilter(null)" style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--teal);font-size:0.8rem;font-weight:700;" title="Hapus filter">✕</button>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-head">Keterangan</div>
+      <div class="legend-list">
+        <div class="leg-item"><div class="leg-swatch" style="background:var(--teal-light);border-color:#9ecec8"></div>Laki-laki</div>
+        <div class="leg-item"><div class="leg-swatch" style="background:var(--rose-light);border-color:#e4b8c8"></div>Perempuan</div>
+        <div class="leg-item"><div class="leg-ring" style="background:var(--gold2);color:#fff">♥</div>Nikah ke-1</div>
+        <div class="leg-item"><div class="leg-ring" style="border:2px solid var(--gold2);color:var(--gold2)">2</div>Nikah ke-2/3</div>
+      </div>
+    </div>
+    <div class="sidebar-section" style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+      <div class="sidebar-section-head">Navigasi Generasi</div>
+      <div class="gen-nav-list" id="gen-nav-list"></div>
+    </div>
+    <!-- ADMIN ONLY: import -->
+    <div class="import-btn-wrap admin-only">
+      <label class="import-label" for="file-input">📂 Import dari Excel (.xlsx)</label>
+      <input type="file" id="file-input" accept=".xlsx,.xls" onchange="importExcel(event)">
+    </div>
+    <!-- VIEWER: info strip -->
+    <div class="viewer-strip viewer-only" style="display:none">
+      <div class="viewer-strip-text">👁️ Mode lihat saja<br>Hubungi admin untuk perubahan data</div>
+    </div>
+  </div>
+
+  <div class="canvas-wrap" id="canvas-wrap">
+    <div id="tree-root">
+      <svg id="lines"></svg>
+      <div id="tree-rows"></div>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="overlay" id="detail-overlay" onclick="if(event.target===this)closeDetail()">
+  <div class="modal">
+    <div class="modal-header">
+      <button class="modal-close" onclick="closeDetail()">✕</button>
+      <div class="modal-title" id="d-name"></div>
+      <div class="modal-sub" id="d-sub"></div>
+    </div>
+    <div class="modal-body">
+      <div class="nasab-chain-box">
+        <div class="ncb-label">⛓ Rantai Nasab — Bin / Binti</div>
+        <div class="ncb-steps" id="d-chain"></div>
+      </div>
+      <div class="detail-grid">
+        <div class="detail-row"><div class="detail-lbl">Generasi</div><div class="detail-val" id="d-gen"></div></div>
+        <div class="detail-row"><div class="detail-lbl">Pasangan</div><div class="detail-val" id="d-spouse"></div></div>
+        <div class="detail-row"><div class="detail-lbl">Anak-anak</div><div class="detail-val" id="d-children"></div></div>
+        <div class="detail-row"><div class="detail-lbl">Catatan</div><div class="detail-val" id="d-note"></div></div>
+      </div>
+      <div class="modal-divider"></div>
+      <div class="modal-actions">
+        <button class="btn btn-gold admin-only" id="d-edit-btn">✎ Edit</button>
+        <button class="btn btn-danger admin-only" id="d-del-btn">✕ Hapus</button>
+        <button class="btn btn-teal-ghost admin-only" id="d-add-child-btn">＋ Tambah Anak</button>
+        <button class="btn btn-ghost" onclick="closeDetail()">Tutup</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FORM MODAL (admin only) -->
+<div class="form-overlay" id="form-overlay" onclick="if(event.target===this)closeForm()">
+  <div class="form-modal">
+    <div class="form-header">
+      <button class="modal-close" onclick="closeForm()" style="background:var(--teal-light);color:var(--teal)">✕</button>
+      <div class="form-title" id="form-title">Tambah Anggota Baru</div>
+    </div>
+    <div class="form-body">
+      <div class="form-group">
+        <label class="form-label">Nama Lengkap *</label>
+        <input class="form-input" id="f-name" placeholder="cth: KH. Ahmad Syafi'i">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Jenis Kelamin *</label>
+          <select class="form-select" id="f-gender">
+            <option value="M">♂ Laki-laki</option>
+            <option value="F">♀ Perempuan</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status Nikah Ke-</label>
+          <select class="form-select" id="f-wifeorder">
+            <option value="">— Bukan pasangan —</option>
+            <option value="1">Istri / Suami ke-1</option>
+            <option value="2">Istri ke-2</option>
+            <option value="3">Istri ke-3</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Anak dari / Pasangan dari</label>
+        <select class="form-select" id="f-parent"><option value="">— Pilih (opsional) —</option></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Catatan</label>
+        <textarea class="form-textarea" id="f-note" placeholder="Gelar, profesi, keterangan lain…"></textarea>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" onclick="saveForm()">💾 Simpan</button>
+        <button class="btn btn-ghost" onclick="closeForm()">Batal</button>
+        <button class="btn btn-danger" id="f-del-btn" style="margin-left:auto;display:none" onclick="deleteFromForm()">✕ Hapus</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /#app -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════════════════
+// AUTH
+// ════════════════════════════════════
+const ADMIN_USER = 'admin';
+const ADMIN_PASS = 'ramli2024';  // ← ganti password di sini
+
+let currentRole = null; // 'admin' | 'viewer'
+let activeTab = 'viewer';
+
+function switchTab(tab) {
+  activeTab = tab;
+  document.getElementById('tab-admin').classList.toggle('active', tab==='admin');
+  document.getElementById('tab-viewer').classList.toggle('active', tab==='viewer');
+  document.getElementById('admin-section').style.display = tab==='admin' ? 'block' : 'none';
+  document.getElementById('viewer-section').style.display = tab==='viewer' ? 'block' : 'none';
+}
+
+function doLogin() {
+  const u = document.getElementById('l-user').value.trim();
+  const p = document.getElementById('l-pass').value;
+  const err = document.getElementById('login-err');
+  if (u === ADMIN_USER && p === ADMIN_PASS) {
+    err.classList.remove('show');
+    enterApp('admin');
+  } else {
+    err.classList.add('show');
+    document.getElementById('l-pass').value = '';
+    document.getElementById('l-pass').focus();
+  }
+}
+
+function enterViewer() { enterApp('viewer'); }
+
+function enterApp(role) {
+  currentRole = role;
+  document.getElementById('login-screen').style.display = 'none';
+  const app = document.getElementById('app');
+  app.style.display = 'flex';
+
+  // role badge
+  const badge = document.getElementById('role-badge');
+  if (role === 'admin') {
+    badge.className = 'role-badge admin';
+    badge.innerHTML = '🔐 Administrator';
+  } else {
+    badge.className = 'role-badge viewer';
+    badge.innerHTML = '👁️ Mode Lihat';
+  }
+
+  // show/hide admin-only & viewer-only elements
+  applyRoleUI();
+
+  loadSample();
+  document.getElementById('tree-root').style.transform = `scale(${scale})`;
+  document.getElementById('canvas-wrap').addEventListener('scroll', drawLines);
+  window.addEventListener('resize', drawLines);
+}
+
+function applyRoleUI() {
+  const isAdmin = currentRole === 'admin';
+  document.querySelectorAll('.admin-only').forEach(el => {
+    el.style.display = isAdmin ? '' : 'none';
+  });
+  document.querySelectorAll('.viewer-only').forEach(el => {
+    el.style.display = isAdmin ? 'none' : '';
+  });
+}
+
+function doLogout() {
+  currentRole = null;
+  filterGen = 'all'; filterGender = null;
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('l-pass').value = '';
+  document.getElementById('login-err').classList.remove('show');
+  // clear search
+  document.getElementById('search').value = '';
+  document.getElementById('search-dropdown').classList.remove('open');
+}
+
+// ════════════════════════════════════
+// DATA
+// ════════════════════════════════════
+let persons = [], nextId = 1;
+function uid() { return 'p'+(nextId++); }
+
+function add(name, gender, ref, wifeOrder, note) {
+  const p = { id:uid(), name, gender, note:note||'', parentId:null, spouseOf:null, wifeOrder:null, gen:0 };
+  if (wifeOrder) { p.spouseOf = ref?ref.id:null; p.wifeOrder = wifeOrder; }
+  else { p.parentId = ref?ref.id:null; }
+  persons.push(p); return p;
+}
+
+function loadSample() {
+  persons = []; nextId = 1;
+  const g1    = add('KH. M Ramli',              'M', null,  null, 'Tokoh pendiri');
+  const g1w1  = add('Nyai Siti Aminah',          'F', g1,   1,    'Istri pertama');
+  const g1w2  = add('Nyai Khadijah',             'F', g1,   2,    'Istri kedua');
+  const g2a   = add('H. Abdullah Ramli',         'M', g1w1, null, 'Putra sulung');
+  const g2aw1 = add('Hj. Fatimah',               'F', g2a,  1,    '');
+  const g2aw2 = add('Hj. Romlah',                'F', g2a,  2,    'Istri kedua');
+                add('Hj. Siti Maryam',            'F', g1w1, null, '');
+  const g2c   = add('H. Ibrahim Ramli',          'M', g1w2, null, 'Putra istri kedua');
+  const g2cw1 = add('Hj. Zubaidah',              'F', g2c,  1,    '');
+  const g3a   = add('H. Muhammad Sholeh',        'M', g2aw1,null, '');
+  const g3aw1 = add('Hj. Nur Aini',              'F', g3a,  1,    '');
+  const g3b   = add('Hj. Siti Hajar',            'F', g2aw1,null, '');
+  const g3bh1 = add('H. Zainal Abidin',          'M', g3b,  1,    'Suami');
+  const g3c   = add('H. Ahmad Fauzi',            'M', g2aw2,null, 'Dari istri kedua');
+  const g3cw1 = add('Hj. Maslakhah',             'F', g3c,  1,    '');
+  const g3d   = add('H. Ismail Ibrahim',         'M', g2cw1,null, '');
+  const g3dw1 = add('Hj. Ruqayyah',              'F', g3d,  1,    '');
+                add('Hj. Halimah Ibrahim',        'F', g2cw1,null, '');
+  const g4a   = add('H. Abdurrahman Sholeh',     'M', g3aw1,null, '');
+  const g4aw1 = add('Hj. Aisyah',                'F', g4a,  1,    '');
+                add('Hj. Ummi Kultsum',           'F', g3aw1,null, '');
+  const g4b   = add('H. Yahya Zainal',           'M', g3bh1,null, '');
+  const g4bw1 = add('Hj. Maryati',               'F', g4b,  1,    '');
+                add('Hj. Ramlah Zainal',          'F', g3bh1,null, '');
+  const g4c   = add('H. Umar Fauzi',             'M', g3cw1,null, '');
+  const g4cw1 = add('Hj. Nurhayati',             'F', g4c,  1,    '');
+  const g4d   = add('H. Ali Ismail',             'M', g3dw1,null, '');
+  const g4dw1 = add('Hj. Hindun',                'F', g4d,  1,    '');
+  const g5a   = add('H. Hasan Abdurrahman',      'M', g4aw1,null, '');
+  const g5aw1 = add('Hj. Musyarofah',            'F', g5a,  1,    '');
+                add('Hj. Sofiyah',               'F', g4aw1,null, '');
+  const g5b   = add('H. Husain Yahya',           'M', g4bw1,null, '');
+  const g5bw1 = add('Hj. Badriyah',              'F', g5b,  1,    '');
+  const g5c   = add('H. Idris Umar',             'M', g4cw1,null, '');
+  const g5cw1 = add('Hj. Jamilah',               'F', g5c,  1,    '');
+  const g5d   = add('H. Yusuf Ali',              'M', g4dw1,null, '');
+  const g5dw1 = add('Hj. Aminah',                'F', g5d,  1,    '');
+  const g6a   = add('Muhammad Fadhil',           'M', g5aw1,null, '');
+  const g6aw1 = add('Siti Nur Azizah',           'F', g6a,  1,    '');
+  const g6b   = add('Ahmad Zaki',                'M', g5aw1,null, '');
+  const g6bw1 = add('Hafsah',                    'F', g6b,  1,    '');
+  const g6c   = add('Abdul Latif',               'M', g5bw1,null, '');
+  const g6cw1 = add('Munawaroh',                 'F', g6c,  1,    '');
+  const g6d   = add('Khairul Anam',              'M', g5cw1,null, '');
+  const g6dw1 = add('Zakiyah',                   'F', g6d,  1,    'Istri pertama');
+  const g6dw2 = add('Rahmawati',                 'F', g6d,  2,    'Istri kedua');
+  const g6e   = add('Syamsul Hadi',              'M', g5dw1,null, '');
+  const g6ew1 = add('Nurul Hidayah',             'F', g6e,  1,    '');
+  const g7a   = add('Fathin Fadhil',             'F', g6aw1,null, '');
+  const g7ah1 = add('Riyan Maulana',             'M', g7a,  1,    'Suami');
+  const g7b   = add('Ilham Zaki',                'M', g6aw1,null, '');
+  const g7bw1 = add('Nadia Safitri',             'F', g7b,  1,    'Istri pertama');
+  const g7bw2 = add('Lailatul Fitriyah',         'F', g7b,  2,    'Istri kedua');
+  const g7c   = add('Firdaus Latif',             'M', g6bw1,null, '');
+  const g7cw1 = add('Hanifah',                   'F', g7c,  1,    '');
+  const g7d   = add('Bilal Anam',                'M', g6dw1,null, '');
+  const g7dw1 = add('Rohmah',                    'F', g7d,  1,    '');
+  const g7e   = add('Nabila Hadi',               'F', g6ew1,null, '');
+  const g7eh1 = add('Farhan Hakim',              'M', g7e,  1,    'Suami');
+                add('Nadhif Hadi',               'M', g6ew1,null, '');
+  const g8a   = add('Rayyan Riyan',              'M', g7ah1,null, '');
+  const g8aw1 = add('Azzahra',                   'F', g8a,  1,    '');
+                add('Naisya Riyan',              'F', g7ah1,null, '');
+                add('Ghifari Ilham',             'M', g7bw1,null, '');
+                add('Azizah Ilham',              'F', g7bw2,null, 'Dari istri kedua Ilham');
+  const g8b   = add('Zaid Firdaus',              'M', g7cw1,null, '');
+                add('Zainab Firdaus',            'F', g7cw1,null, '');
+                add('Hafidz Bilal',              'M', g7dw1,null, '');
+                add('Salma Nabila',              'F', g7eh1,null, '');
+                add('Haikal Farhan',             'M', g7eh1,null, '');
+                add('Khalid Rayyan',             'M', g8aw1,null, '');
+                add('Aisyah Rayyan',             'F', g8aw1,null, '');
+                add('Yahya Zaid',                'M', g8b,  null, 'Generasi ke-10');
+  rebuildGen(); render(); updateStats();
+}
+
+// ════════════════════════════════════
+// BIN/BINTI
+// ════════════════════════════════════
+function buildChain(id) {
+  const byId=Object.fromEntries(persons.map(p=>[p.id,p]));
+  const chain=[]; let cur=byId[id]; if(!cur) return chain;
+  chain.push({person:cur});
+  function walkUp(p) {
+    if(!p) return;
+    if(p.parentId) {
+      const pr=byId[p.parentId]; if(!pr) return;
+      const head=pr.spouseOf?(byId[pr.spouseOf]||pr):pr;
+      chain.push({person:head}); walkUp(head);
+    } else if(p.spouseOf) { walkUp(byId[p.spouseOf]); }
+  }
+  walkUp(cur); return chain;
+}
+
+function getNasabString(id) {
+  const chain=buildChain(id); if(!chain.length) return '';
+  return chain.map((item,i)=>{
+    if(i===0) return item.person.name;
+    const prev=chain[i-1].person;
+    return (prev.gender==='M'?'bin ':'binti ')+item.person.name;
+  }).join(' ');
+}
+
+// ════════════════════════════════════
+// GEN
+// ════════════════════════════════════
+function rebuildGen() {
+  persons.forEach(p=>p.gen=0);
+  function asg(p,g){ p.gen=g; persons.filter(c=>c.parentId===p.id).forEach(c=>asg(c,g+1)); persons.filter(s=>s.spouseOf===p.id).forEach(s=>{s.gen=g;persons.filter(c=>c.parentId===s.id).forEach(c=>asg(c,g+1));}); }
+  persons.filter(p=>!p.parentId&&!p.spouseOf).forEach(r=>asg(r,1));
+}
+
+// ════════════════════════════════════
+// RENDER
+// ════════════════════════════════════
+let scale=0.82, currentDetailId=null;
+function zoom(d){ scale=Math.min(1.6,Math.max(0.3,scale+d)); document.getElementById('tree-root').style.transform=`scale(${scale})`; }
+function resetZoom(){ scale=0.82; document.getElementById('tree-root').style.transform=`scale(${scale})`; }
+
+function render() {
+  rebuildGen();
+  const rows=document.getElementById('tree-rows'); rows.innerHTML='';
+  const maxGen=Math.max(...persons.map(p=>p.gen),0);
+  for(let g=1;g<=maxGen;g++){
+    const row=document.createElement('div'); row.className='gen-row'; row.dataset.gen=g;
+    const mk=document.createElement('div'); mk.className='gen-marker'; mk.textContent=`Gen ${g}`;
+    row.appendChild(mk);
+    persons.filter(p=>p.gen===g&&!p.spouseOf).forEach(h=>row.appendChild(makeCluster(h)));
+    rows.appendChild(row);
+  }
+  updateGenNav(maxGen); setTimeout(drawLines,80);
+}
+
+function makeCluster(head) {
+  const cl=document.createElement('div'); cl.className='family-cluster'; cl.id='cluster-'+head.id;
+  const cb=document.createElement('div'); cb.className='couple-block'; cb.appendChild(makeCard(head));
+  const sps=persons.filter(p=>p.spouseOf===head.id).sort((a,b)=>(a.wifeOrder||1)-(b.wifeOrder||1));
+  if(sps.length){
+    const wc=document.createElement('div'); wc.className='wife-column';
+    sps.forEach((sp,i)=>{
+      const mr=document.createElement('div'); mr.className='marriage-node';
+      const rg=document.createElement('div'); rg.className='marry-ring '+(i===0?'first':i===1?'second':'third');
+      rg.textContent=i===0?'♥':(i+1); rg.title=`Pernikahan ke-${i+1}`;
+      mr.appendChild(rg); mr.appendChild(makeCard(sp)); wc.appendChild(mr);
+    });
+    cb.appendChild(wc);
+  }
+  cl.appendChild(cb); return cl;
+}
+
+function makeCard(p) {
+  const c=document.createElement('div'); c.className=`pcard ${p.gender}`; c.id='card-'+p.id;
+  const ini=p.name.replace(/^(KH\.|H\.|Hj\.|Nyai|Ny\.)\s*/i,'').split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase().substring(0,2);
+  c.innerHTML=`<div class="pcard-icon">${ini}</div><div class="pcard-name">${p.name}</div>${p.wifeOrder>1?`<div class="pcard-tag">Istri ke-${p.wifeOrder}</div>`:''}${p.note?`<div class="pcard-tag">${p.note.substring(0,22)}${p.note.length>22?'…':''}</div>`:''}`;
+  c.addEventListener('click',()=>openDetail(p.id));
+  return c;
+}
+
+function drawLines() {
+  const svg=document.getElementById('lines'), wrap=document.getElementById('canvas-wrap'); svg.innerHTML='';
+  function pos(el){ const r=el.getBoundingClientRect(),wr=wrap.getBoundingClientRect(); return {cx:(r.left-wr.left+wrap.scrollLeft+r.width/2)/scale,bot:(r.top-wr.top+wrap.scrollTop+r.height)/scale,top:(r.top-wr.top+wrap.scrollTop)/scale}; }
+  function pth(d,color,dash){ const p=document.createElementNS('http://www.w3.org/2000/svg','path'); p.setAttribute('d',d);p.setAttribute('stroke',color||'#9a8060');p.setAttribute('stroke-width','1.5');p.setAttribute('fill','none');if(dash)p.setAttribute('stroke-dasharray','5,3');svg.appendChild(p); }
+  persons.filter(p=>!p.spouseOf).forEach(head=>{
+    const hc=document.getElementById('card-'+head.id); if(!hc) return;
+    [head,...persons.filter(s=>s.spouseOf===head.id)].forEach((parent,idx)=>{
+      const children=persons.filter(c=>c.parentId===parent.id); if(!children.length) return;
+      const pc=document.getElementById('card-'+parent.id); if(!pc) return;
+      const pp=pos(pc),midY=pp.bot+26,dash=idx>0,color=dash?'#d4c4a0':'#9a8060';
+      children.forEach(child=>{ const cc=document.getElementById('card-'+child.id); if(!cc) return; const cp=pos(cc); pth(`M ${pp.cx} ${pp.bot} C ${pp.cx} ${midY} ${cp.cx} ${midY} ${cp.cx} ${cp.top}`,color,dash); });
+    });
+  });
+}
+
+// ════════════════════════════════════
+// FILTER STATE
+// ════════════════════════════════════
+let filterGen = 'all'; // 'all' | 1..N
+let filterGender = null; // null | 'M' | 'F'
+
+function setGenFilter(g) {
+  filterGen = g;
+  filterGender = null;
+  applyFilter();
+}
+
+function setGenderFilter(g) {
+  filterGender = g;
+  applyFilter();
+}
+
+function cycleGenderFilter(g) {
+  filterGender = (filterGender === g) ? null : g;
+  applyFilter();
+}
+
+function applyFilter() {
+  // update pills
+  document.querySelectorAll('.gen-pill').forEach(p => p.classList.remove('active'));
+  const activeId = filterGen === 'all' ? 'pill-all' : 'pill-gen-'+filterGen;
+  const activePill = document.getElementById(activeId);
+  if (activePill) activePill.classList.add('active');
+
+  // show/hide rows based on gen filter
+  const maxGen = Math.max(...persons.map(p=>p.gen), 0);
+  for (let g=1; g<=maxGen; g++) {
+    const row = document.querySelector(`.gen-row[data-gen="${g}"]`);
+    if (row) row.style.display = (filterGen === 'all' || filterGen === g) ? '' : 'none';
+  }
+
+  // highlight by gender filter
+  document.querySelectorAll('.pcard').forEach(card => {
+    const id = card.id.replace('card-', '');
+    const p = persons.find(x=>x.id===id);
+    if (!p) return;
+    const genMatch = filterGen === 'all' || p.gen === filterGen;
+    const genderMatch = !filterGender || p.gender === filterGender;
+    card.style.opacity = (genMatch && genderMatch) ? '1' : '0.22';
+    card.style.filter = (genMatch && genderMatch) ? '' : 'grayscale(0.8)';
+  });
+
+  // filter-info banner
+  updateFilterInfo();
+  // stats recalculate
+  updateStats();
+  // redraw lines
+  setTimeout(drawLines, 50);
+}
+
+function updateFilterInfo() {
+  const info = document.getElementById('filter-info');
+  const txt = document.getElementById('filter-info-text');
+  const hasFilter = filterGen !== 'all' || filterGender !== null;
+  if (!hasFilter) { info.style.display = 'none'; return; }
+  const parts = [];
+  if (filterGen !== 'all') parts.push(`Generasi ${filterGen}`);
+  if (filterGender) parts.push(filterGender === 'M' ? '♂ Laki-laki' : '♀ Perempuan');
+  txt.textContent = `Filter aktif: ${parts.join(' + ')}`;
+  info.style.display = 'flex';
+}
+
+function updateStats() {
+  const maxGen = Math.max(...persons.map(p=>p.gen), 0);
+
+  // rebuild gen pills
+  const pillsContainer = document.getElementById('gen-pills');
+  pillsContainer.innerHTML = '';
+  for (let g=1; g<=maxGen; g++) {
+    const btn = document.createElement('button');
+    btn.className = 'gen-pill' + (filterGen === g ? ' active' : '');
+    btn.id = 'pill-gen-'+g;
+    btn.textContent = `Gen ${g}`;
+    btn.onclick = (()=>{ const _g=g; return ()=>setGenFilter(_g); })();
+    pillsContainer.appendChild(btn);
+  }
+  document.getElementById('pill-all').className = 'gen-pill' + (filterGen==='all' ? ' active' : '');
+
+  // filtered persons
+  const filtered = persons.filter(p => {
+    const genOk = filterGen === 'all' || p.gen === filterGen;
+    const genderOk = !filterGender || p.gender === filterGender;
+    return genOk && genderOk;
+  });
+
+  document.getElementById('st-total').textContent = filtered.length;
+
+  // generasi label
+  if (filterGen !== 'all') {
+    document.getElementById('st-gen').textContent = filterGen;
+    document.getElementById('st-gen-lbl').textContent = `Gen Dipilih`;
+  } else {
+    document.getElementById('st-gen').textContent = maxGen;
+    document.getElementById('st-gen-lbl').textContent = `Generasi`;
+  }
+
+  const maleCount = filtered.filter(p=>p.gender==='M').length;
+  const femaleCount = filtered.filter(p=>p.gender==='F').length;
+  document.getElementById('st-male').textContent = maleCount;
+  document.getElementById('st-female').textContent = femaleCount;
+
+  // visual highlight on gender cells
+  const mCell = document.getElementById('st-male').closest('.stat-cell');
+  const fCell = document.getElementById('st-female').closest('.stat-cell');
+  mCell.classList.toggle('filtered', filterGender === 'M');
+  fCell.classList.toggle('filtered', filterGender === 'F');
+}
+
+function updateGenNav(maxGen) {
+  const nav=document.getElementById('gen-nav-list'); nav.innerHTML='';
+  for(let g=1;g<=maxGen;g++){
+    const item=document.createElement('div'); item.className='gen-nav-item'; item.dataset.gen=g;
+    item.innerHTML=`<div class="gen-dot"></div>Generasi ${g}<span class="gen-count">${persons.filter(p=>p.gen===g).length} orang</span>`;
+    item.addEventListener('click',()=>{ document.querySelectorAll('.gen-nav-item').forEach(i=>i.classList.remove('active')); item.classList.add('active'); document.querySelector(`.gen-row[data-gen="${g}"]`)?.scrollIntoView({behavior:'smooth',block:'center'}); });
+    nav.appendChild(item);
+  }
+}
+
+// ════════════════════════════════════
+// SEARCH
+// ════════════════════════════════════
+const searchInput=document.getElementById('search');
+const searchDropdown=document.getElementById('search-dropdown');
+const sqList=document.getElementById('sq-list');
+const chainPanel=document.getElementById('chain-panel');
+
+searchInput.addEventListener('input',()=>{
+  const q=searchInput.value.trim().toLowerCase(); chainPanel.classList.remove('open');
+  if(!q){ searchDropdown.classList.remove('open'); return; }
+  const hits=persons.filter(p=>p.name.toLowerCase().includes(q)).slice(0,10);
+  sqList.innerHTML='';
+  if(!hits.length){ sqList.innerHTML='<div class="sq-item" style="color:var(--ink4);cursor:default;font-style:italic;padding:12px 14px">Tidak ditemukan</div>'; searchDropdown.classList.add('open'); return; }
+  hits.forEach(p=>{
+    const nasab=getNasabString(p.id);
+    const ini=p.name.replace(/^(KH\.|H\.|Hj\.|Nyai)\s*/i,'').split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase().substring(0,2);
+    const item=document.createElement('div'); item.className='sq-item'; item.dataset.id=p.id;
+    item.innerHTML=`<div class="si-badge ${p.gender}">${ini}</div><div class="si-info"><div class="si-name">${p.name}</div><div class="si-chain" title="${nasab}">${nasab}</div></div>`;
+    item.addEventListener('click',()=>showChainPanel(p.id));
+    sqList.appendChild(item);
+  });
+  searchDropdown.classList.add('open');
+});
+
+function showChainPanel(id) {
+  const chain=buildChain(id), p=persons.find(x=>x.id===id);
+  document.getElementById('cp-name').textContent=p.name;
+  document.getElementById('cp-sub').textContent=`${p.gender==='M'?'♂ Laki-laki':'♀ Perempuan'} · Generasi ke-${p.gen}`;
+  const stepsEl=document.getElementById('cp-steps'); stepsEl.innerHTML='';
+  chain.forEach((item,i)=>{
+    const step=document.createElement('div'); step.className='chain-step';
+    const left=document.createElement('div'); left.className='chain-step-left';
+    const num=document.createElement('div'); num.className='chain-num'+(i===0?' self-num':''); num.textContent=i===0?'★':i;
+    left.appendChild(num);
+    if(i<chain.length-1){ const vl=document.createElement('div'); vl.className='chain-vline'; left.appendChild(vl); }
+    const wrap2=document.createElement('div'); wrap2.className='chain-card-wrap';
+    const card=document.createElement('div'); card.className=`chain-card ${item.person.gender}`;
+    const prev=chain[i-1]; const conn=i===0?'':(prev.person.gender==='M'?'bin ':'binti ');
+    const ini=item.person.name.replace(/^(KH\.|H\.|Hj\.|Nyai)\s*/i,'').split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase().substring(0,2);
+    card.innerHTML=`<div style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700;background:${item.person.gender==='M'?'var(--teal-light)':'var(--rose-light)'};color:${item.person.gender==='M'?'var(--teal)':'var(--rose)'};flex-shrink:0;">${ini}</div><div class="cc-info">${conn?`<div class="cc-connector">${conn}</div>`:''}<div class="cc-name">${item.person.name}</div>${item.person.note?`<div class="cc-meta">${item.person.note}</div>`:''}</div>`;
+    card.addEventListener('click',()=>{ closeChainPanel(); openDetail(item.person.id); });
+    wrap2.appendChild(card); step.appendChild(left); step.appendChild(wrap2); stepsEl.appendChild(step);
+  });
+  const nb=document.createElement('div'); nb.className='nasab-full';
+  nb.innerHTML=`<div class="nasab-label">Nasab Lengkap</div><div class="nasab-text">${getNasabString(id)}</div>`;
+  stepsEl.appendChild(nb);
+  document.getElementById('cp-detail-btn').onclick=()=>{ closeChainPanel(); openDetail(id); };
+  document.getElementById('cp-add-btn').onclick=()=>{ closeChainPanel(); openAddForm(null,id); };
+  sqList.querySelectorAll('.sq-item').forEach(el=>el.classList.toggle('active',el.dataset.id===id));
+  chainPanel.classList.add('open');
+  highlightCard(id);
+}
+
+function closeChainPanel(){ chainPanel.classList.remove('open'); searchDropdown.classList.remove('open'); searchInput.value=''; }
+document.addEventListener('click',e=>{ if(!e.target.closest('.search-wrap')) searchDropdown.classList.remove('open'); });
+
+function highlightCard(id) {
+  document.querySelectorAll('.pcard.highlight').forEach(c=>c.classList.remove('highlight'));
+  const card=document.getElementById('card-'+id);
+  if(card){ card.classList.add('highlight'); card.scrollIntoView({behavior:'smooth',block:'center'}); setTimeout(()=>card.classList.remove('highlight'),4000); }
+}
+
+// ════════════════════════════════════
+// DETAIL MODAL
+// ════════════════════════════════════
+function openDetail(id) {
+  const p=persons.find(x=>x.id===id); if(!p) return;
+  currentDetailId=id;
+  document.getElementById('d-name').textContent=p.name;
+  document.getElementById('d-sub').textContent=p.gender==='M'?'♂ Laki-laki':'♀ Perempuan';
+  document.getElementById('d-gen').textContent=`Generasi ke-${p.gen}`;
+  document.getElementById('d-note').textContent=p.note||'—';
+  const spouses=persons.filter(s=>s.spouseOf===id);
+  const spouseOf=p.spouseOf?persons.find(x=>x.id===p.spouseOf):null;
+  document.getElementById('d-spouse').textContent=(spouseOf?[spouseOf]:spouses).map(s=>s.name).join(', ')||'—';
+  const ownSps=persons.filter(s=>s.spouseOf===id);
+  const children=persons.filter(c=>[p,...ownSps].some(ap=>ap.id===c.parentId));
+  document.getElementById('d-children').textContent=children.map(c=>c.name).join(', ')||'—';
+  // chain
+  const chain=buildChain(id), chainEl=document.getElementById('d-chain'); chainEl.innerHTML='';
+  chain.forEach((item,i)=>{
+    const row=document.createElement('div'); row.className='ncb-row';
+    const badge=document.createElement('div'); badge.className='ncb-badge'+(i===0?' self':''); badge.textContent=i===0?'★':i;
+    const nameEl=document.createElement('span'); nameEl.className='ncb-name';
+    const prev=chain[i-1];
+    nameEl.textContent=i===0?item.person.name:((prev.person.gender==='M'?'bin ':'binti ')+item.person.name);
+    nameEl.title='Klik untuk lihat detail';
+    nameEl.addEventListener('click',()=>{ closeDetail(); openDetail(item.person.id); });
+    row.appendChild(badge); row.appendChild(nameEl); chainEl.appendChild(row);
+    if(i<chain.length-1){ const conn=document.createElement('div'); conn.className='ncb-connector'; conn.textContent='↓'; chainEl.appendChild(conn); }
+  });
+  // admin buttons
+  document.getElementById('d-edit-btn').onclick=()=>{ closeDetail(); openEditForm(id); };
+  document.getElementById('d-del-btn').onclick=()=>{ closeDetail(); deletePerson(id); };
+  document.getElementById('d-add-child-btn').onclick=()=>{ closeDetail(); openAddForm(null,id); };
+  document.getElementById('detail-overlay').classList.add('open');
+}
+function closeDetail(){ document.getElementById('detail-overlay').classList.remove('open'); }
+
+// ════════════════════════════════════
+// FORM (admin only)
+// ════════════════════════════════════
+let editingId=null;
+function openAddForm(_,parentId){
+  if(currentRole!=='admin'){ showToast('Hanya admin yang bisa menambah data'); return; }
+  editingId=null;
+  document.getElementById('form-title').textContent='Tambah Anggota Baru';
+  ['f-name','f-note'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-gender').value='M';
+  document.getElementById('f-wifeorder').value='';
+  document.getElementById('f-del-btn').style.display='none';
+  populateParentSelect(parentId||null);
+  document.getElementById('form-overlay').classList.add('open');
+}
+function openEditForm(id){
+  if(currentRole!=='admin'){ showToast('Hanya admin yang bisa mengedit data'); return; }
+  const p=persons.find(x=>x.id===id); if(!p) return;
+  editingId=id;
+  document.getElementById('form-title').textContent='Edit Anggota';
+  document.getElementById('f-name').value=p.name;
+  document.getElementById('f-gender').value=p.gender;
+  document.getElementById('f-note').value=p.note;
+  document.getElementById('f-wifeorder').value=p.wifeOrder||'';
+  document.getElementById('f-del-btn').style.display='block';
+  populateParentSelect(p.parentId||p.spouseOf);
+  if(p.parentId) document.getElementById('f-parent').value=p.parentId;
+  else if(p.spouseOf) document.getElementById('f-parent').value=p.spouseOf;
+  document.getElementById('form-overlay').classList.add('open');
+}
+function populateParentSelect(selectedId){
+  const sel=document.getElementById('f-parent'); sel.innerHTML='<option value="">— Pilih (opsional) —</option>';
+  persons.slice().sort((a,b)=>a.name.localeCompare(b.name)).forEach(p=>{ const opt=document.createElement('option'); opt.value=p.id; opt.textContent=`${p.name} (Gen ${p.gen}, ${p.gender==='M'?'♂':'♀'})`; if(p.id===selectedId) opt.selected=true; sel.appendChild(opt); });
+}
+function saveForm(){
+  const name=document.getElementById('f-name').value.trim(); if(!name){ showToast('Nama tidak boleh kosong!'); return; }
+  const gender=document.getElementById('f-gender').value, note=document.getElementById('f-note').value.trim();
+  const wo=parseInt(document.getElementById('f-wifeorder').value)||null, refId=document.getElementById('f-parent').value;
+  if(editingId){ const p=persons.find(x=>x.id===editingId); p.name=name;p.gender=gender;p.note=note;p.wifeOrder=wo; if(refId){p.spouseOf=wo?refId:null;p.parentId=wo?null:refId;} showToast('Data diperbarui ✓'); }
+  else { const ref=refId?persons.find(x=>x.id===refId):null; persons.push({id:uid(),name,gender,note,parentId:(!wo&&ref)?ref.id:null,spouseOf:(wo&&ref)?ref.id:null,wifeOrder:wo,gen:0}); showToast('Anggota ditambahkan ✓'); }
+  closeForm(); rebuildGen(); render(); updateStats();
+}
+function deleteFromForm(){ if(editingId){closeForm();deletePerson(editingId);} }
+function deletePerson(id){ if(!confirm('Hapus anggota ini?')) return; persons=persons.filter(p=>p.id!==id); showToast('Anggota dihapus'); rebuildGen();render();updateStats(); }
+function closeForm(){ document.getElementById('form-overlay').classList.remove('open'); editingId=null; }
+
+// ════════════════════════════════════
+// EXCEL
+// ════════════════════════════════════
+function importExcel(event){
+  if(currentRole!=='admin'){ showToast('Hanya admin yang bisa import'); return; }
+  const file=event.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const wb=XLSX.read(e.target.result,{type:'array'});
+      const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''});
+      if(!rows.length){showToast('File kosong');return;}
+      persons=[];nextId=1;
+      rows.forEach(r=>{ const p={id:String(r.ID||uid()),name:r.Nama||r.Name||'',gender:(r.JenisKelamin||r.Gender||'').toUpperCase()==='P'?'F':'M',note:String(r.Catatan||r.Note||''),parentId:String(r.ParentID||'')||null,spouseOf:String(r.SpouseOf||'')||null,wifeOrder:parseInt(r.NikahKe)||null,gen:0}; if(p.name) persons.push(p); });
+      nextId=Math.max(...persons.map(p=>parseInt(p.id.replace('p',''))||0))+1;
+      filterGen='all'; filterGender=null;
+      rebuildGen();render();updateStats(); showToast(`✓ Import berhasil: ${persons.length} anggota`);
+    }catch(err){showToast('Gagal import: '+err.message);}
+  };
+  reader.readAsArrayBuffer(file); event.target.value='';
+}
+function exportExcel(){
+  if(currentRole!=='admin'){ showToast('Hanya admin yang bisa export'); return; }
+  const data=persons.map(p=>({ID:p.id,Nama:p.name,JenisKelamin:p.gender==='M'?'L':'P',Catatan:p.note,ParentID:p.parentId||'',SpouseOf:p.spouseOf||'',NikahKe:p.wifeOrder||'',Generasi:p.gen,Nasab:getNasabString(p.id)}));
+  const ws=XLSX.utils.json_to_sheet(data); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Silsilah');
+  XLSX.writeFile(wb,'silsilah-KH-M-Ramli.xlsx'); showToast('✓ Excel berhasil diunduh');
+}
+
+function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800); }
+</script>
+</body>
+</html>
