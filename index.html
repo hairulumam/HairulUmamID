@@ -1441,15 +1441,20 @@ function render() {
     const row=document.createElement('div'); row.className='gen-row'; row.dataset.gen=g;
     const mk=document.createElement('div'); mk.className='gen-marker'; mk.textContent=`Gen ${g}`;
     row.appendChild(mk);
-    // Sort by order field (jika ada), else by array position
-    const heads = persons.filter(p=>p.gen===g&&!p.spouseOf);
-    heads.sort((a,b)=>{
-      const ao = a.order != null ? a.order : 9999;
-      const bo = b.order != null ? b.order : 9999;
-      if(ao !== bo) return ao - bo;
-      return persons.indexOf(a) - persons.indexOf(b);
+    // Render per grup saudara kandung (sama parentId), urutkan by order dalam grup
+    const allHeads = persons.filter(p=>p.gen===g&&!p.spouseOf);
+    const parentOrder = [];
+    allHeads.forEach(h=>{ const pid=h.parentId||null; if(!parentOrder.includes(pid)) parentOrder.push(pid); });
+    parentOrder.forEach(pid=>{
+      const siblings = allHeads.filter(h=>(h.parentId||null)===pid);
+      siblings.sort((a,b)=>{
+        const ao = a.order!=null ? a.order : 9999;
+        const bo = b.order!=null ? b.order : 9999;
+        if(ao!==bo) return ao-bo;
+        return persons.indexOf(a)-persons.indexOf(b);
+      });
+      siblings.forEach(h=>row.appendChild(makeCluster(h)));
     });
-    heads.forEach(h=>row.appendChild(makeCluster(h)));
     rows.appendChild(row);
   }
   updateGenNav(maxGen); setTimeout(drawLines,80);
