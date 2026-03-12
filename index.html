@@ -1071,9 +1071,9 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
           <label class="form-label">Status Nikah Ke-</label>
           <select class="form-select" id="f-wifeorder">
             <option value="">— Bukan pasangan —</option>
-            <option value="1">Istri / Suami ke-1</option>
-            <option value="2">Istri ke-2</option>
-            <option value="3">Istri ke-3</option>
+            <option value="1">Pasangan ke-1</option>
+            <option value="2">Pasangan ke-2</option>
+            <option value="3">Pasangan ke-3</option>
           </select>
         </div>
       </div>
@@ -1334,7 +1334,7 @@ function getNasabString(id) {
 // ════════════════════════════════════
 function rebuildGen() {
   persons.forEach(p=>p.gen=0);
-  function asg(p,g){ p.gen=g; persons.filter(c=>c.parentId===p.id).forEach(c=>asg(c,g+1)); persons.filter(s=>s.spouseOf===p.id).forEach(s=>{s.gen=g;persons.filter(c=>c.parentId===s.id).forEach(c=>asg(c,g+1));}); }
+  function asg(p,g){ if(p.gen===g) return; p.gen=g; persons.filter(c=>c.parentId===p.id).forEach(c=>asg(c,g+1)); persons.filter(s=>s.spouseOf===p.id).forEach(s=>{s.gen=g;persons.filter(c=>c.parentId===s.id).forEach(c=>asg(c,g+1));}); }
   persons.filter(p=>!p.parentId&&!p.spouseOf).forEach(r=>asg(r,1));
 }
 
@@ -1379,7 +1379,8 @@ function makeCluster(head) {
 function makeCard(p) {
   const c=document.createElement('div'); c.className=`pcard ${p.gender}`; c.id='card-'+p.id;
   const ini=p.name.replace(/^(KH\.|H\.|Hj\.|Nyai|Ny\.)\s*/i,'').split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase().substring(0,2);
-  c.innerHTML=`<div class="pcard-icon">${ini}</div><div class="pcard-name">${p.name}</div>${p.wifeOrder>1?`<div class="pcard-tag">Istri ke-${p.wifeOrder}</div>`:''}${p.note?`<div class="pcard-tag">${p.note.substring(0,22)}${p.note.length>22?'…':''}</div>`:''}`;
+  const spouseLabel = p.wifeOrder > 1 ? (p.gender==='F'?`Istri ke-${p.wifeOrder}`:`Suami ke-${p.wifeOrder}`) : '';
+  c.innerHTML=`<div class="pcard-icon">${ini}</div><div class="pcard-name">${p.name}</div>${spouseLabel?`<div class="pcard-tag">${spouseLabel}</div>`:''}${p.note?`<div class="pcard-tag">${p.note.substring(0,22)}${p.note.length>22?'…':''}</div>`:''}`;
   c.addEventListener('click',()=>openDetail(p.id));
   return c;
 }
@@ -1657,18 +1658,19 @@ function populateParentSelect(selectedId){
   const sel=document.getElementById('f-parent');
   sel.innerHTML='<option value="">— Pilih (opsional) —</option>';
   const validPersons = persons.filter(p => p.gen > 0);
-  if (!validPersons.length) return; // kosong, tidak ada pilihan
+  if (!validPersons.length) return;
   const maxGen = Math.max(...validPersons.map(p=>p.gen), 1);
   for (let g = maxGen; g >= 1; g--) {
     const group = validPersons.filter(p => p.gen === g);
     if (!group.length) continue;
     const optgroup = document.createElement('optgroup');
     optgroup.label = `── Generasi ${g} (${group.length} orang) ──`;
-    group.forEach(p => {
+    // Terbaru ditambahkan = index terbesar di array persons → reverse
+    [...group].reverse().forEach(p => {
       const opt = document.createElement('option');
       opt.value = p.id;
-      const role = p.spouseOf ? (p.wifeOrder > 1 ? ` · Istri ke-${p.wifeOrder}` : ' · Pasangan') : '';
-      opt.textContent = `${p.name}${role}`;
+      const spRole = p.spouseOf ? (p.wifeOrder > 1 ? ` · ${p.gender==='F'?'Istri':'Suami'} ke-${p.wifeOrder}` : ` · ${p.gender==='F'?'Istri':'Suami'} ke-1`) : '';
+      opt.textContent = `${p.name}${spRole}`;
       if (p.id === selectedId) opt.selected = true;
       optgroup.appendChild(opt);
     });
