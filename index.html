@@ -986,6 +986,7 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
 
     <div class="header-btns">
       <button class="hbtn accent admin-only" onclick="openAddForm(null)">＋ Tambah</button>
+      <button class="hbtn admin-only" id="btn-save-cloud" onclick="saveToStorage()" style="background:rgba(34,139,34,0.2);border-color:rgba(34,139,34,0.5);color:#90ee90">☁ Simpan</button>
       <button class="hbtn admin-only" onclick="exportExcel()">↓ Excel</button>
       <div class="header-zoom">
         <button class="zoom-btn2" onclick="zoom(-0.1)">−</button>
@@ -1198,6 +1199,10 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
     <button class="mobile-nav-btn admin-only" id="mnb-add" onclick="openAddForm(null)" style="display:none">
       <span class="mnb-icon">➕</span>
       <span class="mnb-label">Tambah</span>
+    </button>
+    <button class="mobile-nav-btn admin-only" id="mnb-save" onclick="saveToStorage()" style="display:none">
+      <span class="mnb-icon">☁</span>
+      <span class="mnb-label">Simpan</span>
     </button>
     <button class="mobile-nav-btn" id="mnb-menu" onclick="mobileNavMenu()">
       <span class="mnb-icon">☰</span>
@@ -1994,10 +1999,10 @@ function saveForm(){
   const orderVal=parseInt(document.getElementById('f-order').value)||null;
   if(editingId){ const p=persons.find(x=>x.id===editingId); p.name=name;p.gender=gender;p.note=note;p.wifeOrder=wo;p.order=orderVal; if(refId){p.spouseOf=wo?refId:null;p.parentId=wo?null:refId;} showToast('Data diperbarui ✓'); }
   else { const ref=refId?persons.find(x=>x.id===refId):null; persons.push({id:uid(),name,gender,note,parentId:(!wo&&ref)?ref.id:null,spouseOf:(wo&&ref)?ref.id:null,wifeOrder:wo,order:null,gen:0}); showToast('Anggota ditambahkan ✓'); }
-  closeForm(); rebuildGen(); render(); updateStats(); saveToStorage();
+  closeForm(); rebuildGen(); render(); updateStats(); markUnsaved();
 }
 function deleteFromForm(){ if(editingId){closeForm();deletePerson(editingId);} }
-function deletePerson(id){ if(!confirm('Hapus anggota ini?')) return; persons=persons.filter(p=>p.id!==id); showToast('Anggota dihapus'); rebuildGen();render();updateStats(); saveToStorage(); }
+function deletePerson(id){ if(!confirm('Hapus anggota ini?')) return; persons=persons.filter(p=>p.id!==id); showToast('Anggota dihapus'); rebuildGen();render();updateStats(); markUnsaved(); }
 function closeForm(){ 
   document.getElementById('form-overlay').classList.remove('open'); 
   editingId=null;
@@ -2071,6 +2076,14 @@ function setBadge(state, msg) {
 }
 
 // ── SAVE to Google Sheets ──
+let _hasUnsaved = false;
+function markUnsaved() {
+  _hasUnsaved = true;
+  setBadge('unsaved', '💾 Ada perubahan — klik Simpan');
+  // Backup ke localStorage saja
+  try { localStorage.setItem('silsilah_cloud_backup', JSON.stringify({persons,nextId,savedAt:new Date().toISOString()})); } catch(_) {}
+}
+
 async function saveToStorage() {
   if (isSyncing) { pendingSave = true; return; }
   isSyncing = true;
@@ -2090,7 +2103,8 @@ async function saveToStorage() {
       body: JSON.stringify(payload)
     });
     // no-cors means we can't read response, assume success
-    lastCloudSavedAt = payload.savedAt; // update timestamp setelah berhasil save
+    lastCloudSavedAt = payload.savedAt;
+    _hasUnsaved = false;
     setBadge('saved');
     setTimeout(() => setBadge('idle'), 3000);
     // also backup to localStorage
@@ -2101,7 +2115,7 @@ async function saveToStorage() {
     try { localStorage.setItem('silsilah_cloud_backup', JSON.stringify({persons,nextId,savedAt:new Date().toISOString()})); } catch(_) {}
   } finally {
     isSyncing = false;
-    if (pendingSave) { pendingSave = false; saveToStorage(); }
+    if (pendingSave) { pendingSave = false; } // manual save only
   }
 }
 
@@ -2178,8 +2192,8 @@ async function initData() {
       showToast('☁ Data dimuat dari cloud');
     }
     setBadge('idle');
-    // auto-resave to fix any gen:0 entries
-    saveToStorage();
+    // fix gen:0 entries — backup lokal saja, tidak ke cloud
+    try { localStorage.setItem('silsilah_cloud_backup', JSON.stringify({persons,nextId,savedAt:new Date().toISOString()})); } catch(_) {}
   } else {
     // Cloud kosong — mulai kosong, siap input manual
     persons = []; nextId = 1;
@@ -2190,9 +2204,9 @@ async function initData() {
 
   // ── Auto-reload dari cloud setiap 5 menit ──
   setInterval(async () => {
-    // Jangan reload kalau sedang ada form terbuka
+    // Jangan reload kalau form terbuka atau ada perubahan belum disimpan
     if (document.getElementById('form-overlay').classList.contains('open')) return;
-    const prevCount = persons.length;
+    if (_hasUnsaved) return; // admin sedang edit, jangan timpa
     const prevNames = persons.map(p=>p.id+p.name+p.order).join('|');
     const result = await loadFromCloud();
     if (result) {
