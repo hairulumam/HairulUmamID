@@ -2116,12 +2116,22 @@ async function loadFromCloud() {
     const cloudData = JSON.parse(text);
     if (!cloudData || !cloudData.persons || !cloudData.persons.length) throw new Error('no persons');
 
-    // Bandingkan timestamp — pakai yang LEBIH BARU
+    // Pakai data dengan jumlah persons TERBANYAK, jika sama baru pakai timestamp
     const cloudTime = cloudData.savedAt ? new Date(cloudData.savedAt).getTime() : 0;
     const localTime = localData && localData.savedAt ? new Date(localData.savedAt).getTime() : 0;
+    const localCount = (localData && localData.persons) ? localData.persons.length : 0;
+    const cloudCount = cloudData.persons.length;
 
-    const data = (localTime > cloudTime && localData.persons.length) ? localData : cloudData;
-    const source = (localTime > cloudTime && localData.persons.length) ? 'local' : 'cloud';
+    let data, source;
+    if (localCount > cloudCount) {
+      data = localData; source = 'local';
+    } else if (cloudCount > localCount) {
+      data = cloudData; source = 'cloud';
+    } else {
+      // Jumlah sama — pakai timestamp terbaru
+      data = (localTime > cloudTime && localData) ? localData : cloudData;
+      source = (localTime > cloudTime && localData) ? 'local' : 'cloud';
+    }
 
     persons = data.persons;
     persons.forEach(p=>{ if(p.order===undefined) p.order=null; });
