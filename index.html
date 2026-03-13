@@ -987,6 +987,7 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
     <div class="header-btns">
       <button class="hbtn accent admin-only" onclick="openAddForm(null)">＋ Tambah</button>
       <button class="hbtn admin-only" id="btn-save-cloud" onclick="saveToStorage()" style="background:rgba(34,139,34,0.2);border-color:rgba(34,139,34,0.5);color:#90ee90">☁ Simpan</button>
+      <button class="hbtn" onclick="forceReloadCloud()" title="Muat ulang data terbaru dari cloud">🔄</button>
       <button class="hbtn admin-only" onclick="exportExcel()">↓ Excel</button>
       <div class="header-zoom">
         <button class="zoom-btn2" onclick="zoom(-0.1)">−</button>
@@ -1203,6 +1204,10 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
     <button class="mobile-nav-btn admin-only" id="mnb-save" onclick="saveToStorage()" style="display:none">
       <span class="mnb-icon">☁</span>
       <span class="mnb-label">Simpan</span>
+    </button>
+    <button class="mobile-nav-btn" id="mnb-reload" onclick="forceReloadCloud()">
+      <span class="mnb-icon">🔄</span>
+      <span class="mnb-label">Perbarui</span>
     </button>
     <button class="mobile-nav-btn" id="mnb-menu" onclick="mobileNavMenu()">
       <span class="mnb-icon">☰</span>
@@ -2176,12 +2181,36 @@ async function clearAllData() {
 }
 
 // ── INIT ──
+async function forceReloadCloud() {
+  showLoading('Memuat data terbaru dari cloud…');
+  // Hapus backup lokal dulu agar tidak fallback ke data lama
+  try { localStorage.removeItem('silsilah_cloud_backup'); } catch(_) {}
+  const result = await loadFromCloud();
+  hideLoading();
+  if (result === 'backup') {
+    rebuildGen(); render(); updateStats();
+    showToast('⚠ Cloud tidak bisa diakses — data dari backup lokal');
+    setBadge('error', '⚠ Backup lokal (cloud gagal)');
+  } else if (result) {
+    rebuildGen(); render(); updateStats();
+    _hasUnsaved = false;
+    setBadge('idle');
+    const tgl = typeof result === 'string'
+      ? new Date(result).toLocaleString('id-ID',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})
+      : '';
+    showToast('🔄 Data cloud dimuat' + (tgl ? ' — tersimpan ' + tgl : ''));
+  } else {
+    showToast('⚠ Gagal memuat dari cloud — cek koneksi internet');
+    setBadge('error', '⚠ Gagal load cloud');
+  }
+}
+
 async function initData() {
   showLoading('Memuat data silsilah…');
   const savedAt = await loadFromCloud();
   if (savedAt === 'backup') {
     rebuildGen(); render(); updateStats();
-    showToast('📂 Dimuat dari backup lokal (cloud tidak tersedia)');
+    showToast('⚠ Cloud tidak bisa diakses — data dari backup lokal. Klik 🔄 untuk coba lagi.');
     setBadge('error', '⚠ Menggunakan backup lokal');
   } else if (savedAt) {
     rebuildGen(); render(); updateStats();
