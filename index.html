@@ -2204,9 +2204,9 @@ async function initData() {
 
   // ── Auto-reload dari cloud setiap 5 menit ──
   setInterval(async () => {
-    // Jangan reload kalau form terbuka atau ada perubahan belum disimpan
+    // Jangan reload kalau admin sedang ada perubahan belum disimpan
     if (document.getElementById('form-overlay').classList.contains('open')) return;
-    if (_hasUnsaved) return; // admin sedang edit, jangan timpa
+    if (_hasUnsaved && currentRole === 'admin') return; // admin sedang edit, jangan timpa
     const prevNames = persons.map(p=>p.id+p.name+p.order).join('|');
     const result = await loadFromCloud();
     if (result) {
