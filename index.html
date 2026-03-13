@@ -2043,6 +2043,7 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbykZwt1x3IKS-8JAzrlnJ4N
 
 let isSyncing = false;
 let pendingSave = false;
+let lastSaveTime = 0; // timestamp terakhir kali save berhasil
 
 // ── Loading overlay helpers ──
 function showLoading(msg) {
@@ -2076,22 +2077,21 @@ async function saveToStorage() {
   setBadge('saving');
   try {
     const payload = { persons, nextId, savedAt: new Date().toISOString() };
-    // Google Apps Script requires no-cors for POST from browser
-    await fetch(GAS_URL, {
+    // 1. Simpan ke localStorage DULU — ini pasti berhasil
+    localStorage.setItem('silsilah_cloud_backup', JSON.stringify(payload));
+    // 2. Kirim ke cloud (no-cors, tidak bisa cek hasilnya)
+    fetch(GAS_URL, {
       method: 'POST',
       mode: 'no-cors',
       headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify(payload)
-    });
-    // no-cors means we can't read response, assume success
+    }).catch(e => console.error('Cloud save error:', e));
+    lastSaveTime = Date.now();
     setBadge('saved');
     setTimeout(() => setBadge('idle'), 3000);
-    // also backup to localStorage
-    try { localStorage.setItem('silsilah_cloud_backup', JSON.stringify(payload)); } catch(_) {}
   } catch(e) {
-    console.error('Gagal simpan ke cloud:', e);
+    console.error('Gagal simpan:', e);
     setBadge('error', '⚠ Gagal — cek koneksi');
-    try { localStorage.setItem('silsilah_cloud_backup', JSON.stringify({persons,nextId,savedAt:new Date().toISOString()})); } catch(_) {}
   } finally {
     isSyncing = false;
     if (pendingSave) { pendingSave = false; saveToStorage(); }
@@ -2100,33 +2100,49 @@ async function saveToStorage() {
 
 // ── LOAD from Google Sheets ──
 async function loadFromCloud() {
+  // Ambil localStorage backup dulu
+  let localData = null;
+  try {
+    const backup = localStorage.getItem('silsilah_cloud_backup');
+    if (backup) localData = JSON.parse(backup);
+  } catch(_) {}
+
+  // Coba ambil dari cloud
   try {
     const res = await fetch(GAS_URL + '?t=' + Date.now());
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const text = await res.text();
-    if (!text || text === '[]' || text === '{}') return false;
-    const data = JSON.parse(text);
-    if (!data || !data.persons || !data.persons.length) return false;
+    if (!text || text === '[]' || text === '{}') throw new Error('empty');
+    const cloudData = JSON.parse(text);
+    if (!cloudData || !cloudData.persons || !cloudData.persons.length) throw new Error('no persons');
+
+    // Bandingkan timestamp — pakai yang LEBIH BARU
+    const cloudTime = cloudData.savedAt ? new Date(cloudData.savedAt).getTime() : 0;
+    const localTime = localData && localData.savedAt ? new Date(localData.savedAt).getTime() : 0;
+
+    const data = (localTime > cloudTime && localData.persons.length) ? localData : cloudData;
+    const source = (localTime > cloudTime && localData.persons.length) ? 'local' : 'cloud';
+
     persons = data.persons;
-    // Migrasi: pastikan field order ada di semua person
     persons.forEach(p=>{ if(p.order===undefined) p.order=null; });
     nextId = data.nextId || (Math.max(...persons.map(p=>parseInt(p.id.replace('p',''))||0)) + 1);
+
+    // Jika local lebih baru, sinkronkan balik ke cloud
+    if (source === 'local') {
+      console.log('Local lebih baru, sync ke cloud...');
+      fetch(GAS_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify(data) }).catch(()=>{});
+    }
+
     return data.savedAt || true;
   } catch(e) {
     console.error('Gagal load dari cloud:', e);
-    // fallback: coba localStorage backup
-    try {
-      const backup = localStorage.getItem('silsilah_cloud_backup');
-      if (backup) {
-        const data = JSON.parse(backup);
-        if (data && data.persons && data.persons.length) {
-          persons = data.persons;
-          persons.forEach(p=>{ if(p.order===undefined) p.order=null; });
-          nextId = data.nextId || 1;
-          return 'backup';
-        }
-      }
-    } catch(_) {}
+    // Fallback ke localStorage
+    if (localData && localData.persons && localData.persons.length) {
+      persons = localData.persons;
+      persons.forEach(p=>{ if(p.order===undefined) p.order=null; });
+      nextId = localData.nextId || 1;
+      return 'backup';
+    }
     return false;
   }
 }
@@ -2180,20 +2196,7 @@ async function initData() {
   }
   hideLoading();
 
-  // ── Auto-reload dari cloud setiap 5 menit ──
-  setInterval(async () => {
-    // Jangan reload kalau form terbuka
-    if (document.getElementById('form-overlay').classList.contains('open')) return;
-    const prevNames = persons.map(p=>p.id+p.name+p.order).join('|');
-    const result = await loadFromCloud();
-    if (result) {
-      const newNames = persons.map(p=>p.id+p.name+p.order).join('|');
-      if (newNames !== prevNames) {
-        rebuildGen(); render(); updateStats();
-        showToast('🔄 Data diperbarui dari cloud');
-      }
-    }
-  }, 5 * 60 * 1000); // 5 menit
+  // Auto-reload dimatikan — viewer refresh manual (Ctrl+Shift+R atau reload browser)
 }
 
 // ════════════════════════════════════
