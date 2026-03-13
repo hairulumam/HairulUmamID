@@ -1365,6 +1365,7 @@ function doLogout() {
 // DATA
 // ════════════════════════════════════
 let persons = [], nextId = 1;
+let lastCloudSavedAt = null; // timestamp cloud saat terakhir kali kita load
 function uid() { return 'p'+(nextId++); }
 
 function add(name, gender, ref, wifeOrder, note) {
@@ -2075,6 +2076,40 @@ async function saveToStorage() {
   isSyncing = true;
   setBadge('saving');
   try {
+    // ── Cek apakah cloud punya data lebih baru sebelum overwrite ──
+    try {
+      const checkRes = await fetch(GAS_URL + '?t=' + Date.now());
+      if (checkRes.ok) {
+        const checkText = await checkRes.text();
+        if (checkText && checkText !== '[]') {
+          const checkData = JSON.parse(checkText);
+          if (checkData && checkData.savedAt && lastCloudSavedAt) {
+            const cloudTime = new Date(checkData.savedAt).getTime();
+            const ourLoadTime = new Date(lastCloudSavedAt).getTime();
+            if (cloudTime > ourLoadTime) {
+              // Cloud lebih baru! Tolak save, muat ulang dulu
+              isSyncing = false;
+              setBadge('error', '⚠ Data di cloud lebih baru!');
+              if (confirm('⚠ Data di cloud lebih baru dari yang Anda edit sekarang.
+
+Muat ulang data terbaru dari cloud? (Perubahan Anda akan hilang)')) {
+                persons = checkData.persons;
+                persons.forEach(p=>{ if(p.order===undefined) p.order=null; });
+                nextId = checkData.nextId || 1;
+                lastCloudSavedAt = checkData.savedAt;
+                rebuildGen(); render(); updateStats();
+                showToast('🔄 Data diperbarui dari cloud (lebih baru)');
+                setBadge('idle');
+              } else {
+                showToast('⚠ Simpan dibatalkan — refresh halaman untuk data terbaru');
+              }
+              return;
+            }
+          }
+        }
+      }
+    } catch(_) { /* skip cek jika gagal, lanjut save */ }
+
     const payload = { persons, nextId, savedAt: new Date().toISOString() };
     // Google Apps Script requires no-cors for POST from browser
     await fetch(GAS_URL, {
@@ -2084,6 +2119,7 @@ async function saveToStorage() {
       body: JSON.stringify(payload)
     });
     // no-cors means we can't read response, assume success
+    lastCloudSavedAt = payload.savedAt; // update timestamp setelah berhasil save
     setBadge('saved');
     setTimeout(() => setBadge('idle'), 3000);
     // also backup to localStorage
@@ -2111,6 +2147,7 @@ async function loadFromCloud() {
     // Migrasi: pastikan field order ada di semua person
     persons.forEach(p=>{ if(p.order===undefined) p.order=null; });
     nextId = data.nextId || (Math.max(...persons.map(p=>parseInt(p.id.replace('p',''))||0)) + 1);
+    lastCloudSavedAt = data.savedAt || null; // simpan timestamp cloud
     return data.savedAt || true;
   } catch(e) {
     console.error('Gagal load dari cloud:', e);
@@ -2179,6 +2216,22 @@ async function initData() {
     showToast('✓ Siap — silakan tambah anggota keluarga');
   }
   hideLoading();
+
+  // ── Auto-reload dari cloud setiap 5 menit ──
+  setInterval(async () => {
+    // Jangan reload kalau sedang ada form terbuka
+    if (document.getElementById('form-overlay').classList.contains('open')) return;
+    const prevCount = persons.length;
+    const prevNames = persons.map(p=>p.id+p.name+p.order).join('|');
+    const result = await loadFromCloud();
+    if (result) {
+      const newNames = persons.map(p=>p.id+p.name+p.order).join('|');
+      if (newNames !== prevNames) {
+        rebuildGen(); render(); updateStats();
+        showToast('🔄 Data diperbarui dari cloud');
+      }
+    }
+  }, 5 * 60 * 1000); // 5 menit
 }
 
 // ════════════════════════════════════
