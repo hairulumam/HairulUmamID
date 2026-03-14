@@ -1279,7 +1279,7 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
 // AUTH
 // ════════════════════════════════════
 const ADMIN_USER = 'admin';
-const ADMIN_PASS = 'umam2026';  // ← ganti password di sini
+const ADMIN_PASS = 'ramli2024';  // ← ganti password di sini
 
 let currentRole = null; // 'admin' | 'viewer'
 let activeTab = 'viewer';
@@ -2078,10 +2078,10 @@ async function saveToStorage() {
   setBadge('saving');
   try {
     const payload = { persons, nextId, savedAt: new Date().toISOString() };
-    // 1. Simpan ke localStorage DULU — ini pasti berhasil
+    // Simpan ke localStorage dulu
     localStorage.setItem('silsilah_cloud_backup', JSON.stringify(payload));
-    // 2. Kirim ke JSONBin
-    await fetch(JSONBIN_URL, {
+    // Kirim ke JSONBin dan TUNGGU konfirmasi
+    const res = await fetch(JSONBIN_URL, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -2089,12 +2089,14 @@ async function saveToStorage() {
       },
       body: JSON.stringify(payload)
     });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     lastSaveTime = Date.now();
     setBadge('saved');
     setTimeout(() => setBadge('idle'), 3000);
   } catch(e) {
-    console.error('Gagal simpan:', e);
+    console.error('Gagal simpan ke JSONBin:', e);
     setBadge('error', '⚠ Gagal — cek koneksi');
+    showToast('⚠ Gagal simpan ke cloud, data aman di lokal');
   } finally {
     isSyncing = false;
     if (pendingSave) { pendingSave = false; saveToStorage(); }
@@ -2120,21 +2122,17 @@ async function loadFromCloud() {
     const cloudData = json.record;
     if (!cloudData || !cloudData.persons || !cloudData.persons.length) throw new Error('no persons');
 
-    // Pakai data dengan jumlah persons TERBANYAK, jika sama baru pakai timestamp
-    const cloudTime = cloudData.savedAt ? new Date(cloudData.savedAt).getTime() : 0;
-    const localTime = localData && localData.savedAt ? new Date(localData.savedAt).getTime() : 0;
+    // SELALU pakai data terbanyak — tidak boleh turun
     const localCount = (localData && localData.persons) ? localData.persons.length : 0;
     const cloudCount = cloudData.persons.length;
 
     let data, source;
-    if (localCount > cloudCount) {
+    if (localCount >= cloudCount && localData) {
+      // Local sama atau lebih banyak — pakai local
       data = localData; source = 'local';
-    } else if (cloudCount > localCount) {
-      data = cloudData; source = 'cloud';
     } else {
-      // Jumlah sama — pakai timestamp terbaru
-      data = (localTime > cloudTime && localData) ? localData : cloudData;
-      source = (localTime > cloudTime && localData) ? 'local' : 'cloud';
+      // Cloud lebih banyak — pakai cloud
+      data = cloudData; source = 'cloud';
     }
 
     persons = data.persons;
