@@ -2122,16 +2122,14 @@ async function loadFromCloud() {
     const cloudData = json.record;
     if (!cloudData || !cloudData.persons || !cloudData.persons.length) throw new Error('no persons');
 
-    // SELALU pakai data terbanyak — tidak boleh turun
-    const localCount = (localData && localData.persons) ? localData.persons.length : 0;
-    const cloudCount = cloudData.persons.length;
+    // JSONBin sudah reliable — pakai timestamp terbaru
+    const cloudTime = cloudData.savedAt ? new Date(cloudData.savedAt).getTime() : 0;
+    const localTime = localData && localData.savedAt ? new Date(localData.savedAt).getTime() : 0;
 
     let data, source;
-    if (localCount >= cloudCount && localData) {
-      // Local sama atau lebih banyak — pakai local
+    if (localTime > cloudTime && localData && localData.persons) {
       data = localData; source = 'local';
     } else {
-      // Cloud lebih banyak — pakai cloud
       data = cloudData; source = 'cloud';
     }
 
