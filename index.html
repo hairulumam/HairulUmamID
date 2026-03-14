@@ -2039,7 +2039,8 @@ function showToast(msg){ const t=document.getElementById('toast'); t.textContent
 // ════════════════════════════════════
 // GOOGLE SHEETS — Cloud Storage
 // ════════════════════════════════════
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbykZwt1x3IKS-8JAzrlnJ4NZRaIM9_tH6Af56klSOuZ-Iu5oEDPp8kM4bA3PubKH6n1/exec';
+const JSONBIN_URL = 'https://api.jsonbin.io/v3/b/69b4b4d4c3097a1dd522f79b';
+const JSONBIN_KEY = '$2a$10$pAtLpd0faRr89h2tm8J6UeY6OJNIQJS7yM41IaJfaT63fLowHtac2';
 
 let isSyncing = false;
 let pendingSave = false;
@@ -2079,13 +2080,15 @@ async function saveToStorage() {
     const payload = { persons, nextId, savedAt: new Date().toISOString() };
     // 1. Simpan ke localStorage DULU — ini pasti berhasil
     localStorage.setItem('silsilah_cloud_backup', JSON.stringify(payload));
-    // 2. Kirim ke cloud (no-cors, tidak bisa cek hasilnya)
-    fetch(GAS_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain' },
+    // 2. Kirim ke JSONBin
+    await fetch(JSONBIN_URL, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': JSONBIN_KEY
+      },
       body: JSON.stringify(payload)
-    }).catch(e => console.error('Cloud save error:', e));
+    });
     lastSaveTime = Date.now();
     setBadge('saved');
     setTimeout(() => setBadge('idle'), 3000);
@@ -2109,11 +2112,12 @@ async function loadFromCloud() {
 
   // Coba ambil dari cloud
   try {
-    const res = await fetch(GAS_URL + '?t=' + Date.now());
+    const res = await fetch(JSONBIN_URL + '/latest', {
+      headers: { 'X-Master-Key': JSONBIN_KEY }
+    });
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    const text = await res.text();
-    if (!text || text === '[]' || text === '{}') throw new Error('empty');
-    const cloudData = JSON.parse(text);
+    const json = await res.json();
+    const cloudData = json.record;
     if (!cloudData || !cloudData.persons || !cloudData.persons.length) throw new Error('no persons');
 
     // Pakai data dengan jumlah persons TERBANYAK, jika sama baru pakai timestamp
@@ -2140,7 +2144,7 @@ async function loadFromCloud() {
     // Jika local lebih baru, sinkronkan balik ke cloud
     if (source === 'local') {
       console.log('Local lebih baru, sync ke cloud...');
-      fetch(GAS_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify(data) }).catch(()=>{});
+      fetch(JSONBIN_URL, { method:'PUT', headers:{'Content-Type':'application/json','X-Master-Key':JSONBIN_KEY}, body:JSON.stringify(data) }).catch(()=>{});
     }
 
     return data.savedAt || true;
