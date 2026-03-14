@@ -1383,6 +1383,15 @@ function loadSample() {
 // ════════════════════════════════════
 // BIN/BINTI
 // ════════════════════════════════════
+function getNasabShort(id) {
+  const chain = buildChain(id);
+  if (chain.length <= 1) return '';
+  // Ambil maksimal 2 leluhur
+  return chain.slice(1, 3).map(item =>
+    (item.person.gender==='M' ? 'bin ' : 'binti ') + item.person.name
+  ).join(' ');
+}
+
 function buildChain(id) {
   const byId=Object.fromEntries(persons.map(p=>[p.id,p]));
   const chain=[]; let cur=byId[id]; if(!cur) return chain;
@@ -1688,6 +1697,7 @@ searchInput.addEventListener('input',()=>{
   if(!q){ showRecentInSearch(); return; }
   const allHits=persons.filter(p=>p.name.toLowerCase().includes(q));
   // Deduplikasi: nama sama + salah satu hanya punya spouseOf → buang yang spouseOf saja
+  allHits.sort((a,b)=>(b.gen||0)-(a.gen||0)); // generasi terbaru duluan
   const dedupHits = [];
   allHits.forEach(p=>{
     const sameName = dedupHits.filter(x=>x.name.trim().toLowerCase()===p.name.trim().toLowerCase());
@@ -1884,7 +1894,8 @@ function populateParentSelect(selectedId) {
     if (!group.length) continue;
     [...group].reverse().forEach(p => {
       const spRole = p.spouseOf ? ` (${p.gender==='F'?'Istri':'Suami'} ke-${p.wifeOrder||1})` : '';
-      _parentData.push({ id: p.id, name: p.name + spRole, gender: p.gender, gen: g });
+      const nasabShort = getNasabShort(p.id);
+      _parentData.push({ id: p.id, name: p.name + spRole, gender: p.gender, gen: g, nasab: nasabShort });
     });
   }
   // Set initial value if editing
@@ -1927,7 +1938,7 @@ function renderParentList(query) {
       const ini = item.name.replace(/^(KH\.|H\.|Hj\.|Nyai|Ny\.)\s*/i,'').split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase().substring(0,2);
       const div = document.createElement('div');
       div.className = 'parent-item' + (item.id === selectedId ? ' selected' : '');
-      div.innerHTML = `<div class="pi-badge ${item.gender}">${ini}</div><div class="pi-name">${item.name}</div><div class="pi-gen">Gen ${item.gen}</div>`;
+      div.innerHTML = `<div class="pi-badge ${item.gender}">${ini}</div><div class="pi-name">${item.name}${item.nasab ? '<div style="font-size:0.65rem;color:#9a8060;margin-top:1px">'+item.nasab+'</div>' : ''}</div><div class="pi-gen">Gen ${item.gen}</div>`;
       div.onclick = () => selectParent(item.id, item.name);
       list.appendChild(div);
       totalShown++;
@@ -2288,6 +2299,7 @@ document.getElementById('mobile-search-inp').addEventListener('input', function(
   list.innerHTML = '';
   if (!q) { showMobileRecent(); return; }
   const allHitsM=persons.filter(p=>p.name.toLowerCase().includes(q));
+  allHitsM.sort((a,b)=>(b.gen||0)-(a.gen||0));
   const dedupM=[];
   allHitsM.forEach(p=>{
     const same=dedupM.filter(x=>x.name.trim().toLowerCase()===p.name.trim().toLowerCase());
