@@ -463,6 +463,17 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
 .modal-close:hover { background:var(--border); color:var(--ink); }
 .modal-title { font-family:'Lora',serif; font-size:1.4rem; font-weight:700; color:var(--ink2); padding-right:36px; }
 .modal-sub { font-size:0.78rem; color:var(--ink4); margin-top:4px; }
+.kerabat-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:800; display:none; align-items:center; justify-content:center; }
+.kerabat-overlay.open { display:flex; }
+.kerabat-modal { background:var(--parch); border-radius:16px; width:min(500px,94vw); max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.35); }
+.kerabat-header { background:var(--teal); color:#fff; padding:18px 20px; border-radius:16px 16px 0 0; display:flex; align-items:center; gap:12px; }
+.kerabat-title { font-family:"Lora",serif; font-size:1.1rem; font-weight:700; flex:1; }
+.kerabat-body { padding:20px; }
+.kerabat-row { display:flex; gap:10px; margin-bottom:12px; align-items:center; }
+.kerabat-result { margin-top:16px; padding:16px; background:rgba(184,134,11,0.08); border-radius:10px; border-left:4px solid var(--gold2); }
+.kerabat-hubungan { font-size:1.1rem; font-weight:700; color:var(--ink); font-family:"Lora",serif; margin-bottom:6px; }
+.kerabat-detail { font-size:0.82rem; color:var(--ink3); line-height:1.6; }
+.kerabat-jalur { margin-top:10px; font-size:0.78rem; color:var(--ink4); font-style:italic; }
 .modal-parents {
   margin-top:8px; padding:7px 12px;
   background:rgba(184,134,11,0.08); border-radius:8px;
@@ -992,6 +1003,7 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
 
     <div class="header-btns">
       <button class="hbtn accent admin-only" onclick="openAddForm(null)">＋ Tambah</button>
+      <button class="hbtn" onclick="openKerabat()">🔗 Kerabat</button>
       <button class="hbtn admin-only" onclick="exportExcel()">↓ Excel</button>
       <div class="header-zoom">
         <button class="zoom-btn2" onclick="zoom(-0.1)">−</button>
@@ -1106,6 +1118,39 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
   </div>
 </div>
 
+<!-- KERABAT MODAL -->
+<div class="kerabat-overlay" id="kerabat-overlay" onclick="if(event.target===this)closeKerabat()">
+  <div class="kerabat-modal">
+    <div class="kerabat-header">
+      <span style="font-size:1.4rem">🔗</span>
+      <div class="kerabat-title">Cek Hubungan Kekerabatan</div>
+      <button onclick="closeKerabat()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;border-radius:8px;padding:4px 10px;cursor:pointer;font-size:1rem">✕</button>
+    </div>
+    <div class="kerabat-body">
+      <div class="kerabat-row">
+        <div style="flex:1;position:relative">
+          <input class="form-input" id="kr-input-1" placeholder="🔍 Nama pertama..." autocomplete="off" oninput="krSearch(1,this.value)" onfocus="krSearch(1,this.value)">
+          <div id="kr-drop-1" style="display:none;position:absolute;z-index:999;width:100%;max-height:180px;overflow-y:auto;background:#fff;border:1.5px solid #d4c4a0;border-top:none;border-radius:0 0 8px 8px;box-shadow:0 8px 24px rgba(0,0,0,0.12)"></div>
+        </div>
+        <input type="hidden" id="kr-id-1">
+      </div>
+      <div class="kerabat-row">
+        <div style="flex:1;position:relative">
+          <input class="form-input" id="kr-input-2" placeholder="🔍 Nama kedua..." autocomplete="off" oninput="krSearch(2,this.value)" onfocus="krSearch(2,this.value)">
+          <div id="kr-drop-2" style="display:none;position:absolute;z-index:999;width:100%;max-height:180px;overflow-y:auto;background:#fff;border:1.5px solid #d4c4a0;border-top:none;border-radius:0 0 8px 8px;box-shadow:0 8px 24px rgba(0,0,0,0.12)"></div>
+        </div>
+        <input type="hidden" id="kr-id-2">
+      </div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="cekKerabat()">🔍 Cek Hubungan</button>
+      <div id="kerabat-result" style="display:none" class="kerabat-result">
+        <div class="kerabat-hubungan" id="kr-hubungan"></div>
+        <div class="kerabat-detail" id="kr-detail"></div>
+        <div class="kerabat-jalur" id="kr-jalur"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- FORM MODAL (admin only) -->
 <div class="form-overlay" id="form-overlay" onclick="if(event.target===this)closeForm()">
   <div class="form-modal">
@@ -1204,6 +1249,10 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
     <button class="mobile-nav-btn admin-only" id="mnb-add" onclick="openAddForm(null)" style="display:none">
       <span class="mnb-icon">➕</span>
       <span class="mnb-label">Tambah</span>
+    </button>
+    <button class="mobile-nav-btn" id="mnb-kerabat" onclick="openKerabat()">
+      <span class="mnb-icon">🔗</span>
+      <span class="mnb-label">Kerabat</span>
     </button>
     <button class="mobile-nav-btn" id="mnb-menu" onclick="mobileNavMenu()">
       <span class="mnb-icon">☰</span>
@@ -1413,12 +1462,8 @@ function buildChain(id) {
       if(visited.has(head.id)) return;
       visited.add(head.id);
       chain.push({person:head}); walkUp(head);
-    } else if(p.spouseOf && !p.parentId) {
-      // Hanya naik ke kepala keluarga jika TIDAK punya jalur kandung
-      const head=byId[p.spouseOf]; if(!head || visited.has(head.id)) return;
-      visited.add(head.id);
-      walkUp(head);
     }
+    // Jika hanya spouseOf tanpa parentId → nasab berhenti di sini, tidak ikut suami
   }
   walkUp(cur); return chain;
 }
@@ -1824,18 +1869,12 @@ function openDetail(id) {
     // Orang ini adalah pasangan (spouseOf) — dia istri/suami dari kepala keluarga
     const label = p.gender==='F' ? 'Suami' : 'Istri';
     document.getElementById('d-spouse-lbl').textContent = label;
-    document.getElementById('d-spouse').innerHTML = `<span class="detail-name-link" data-pid="${spouseOf.id}" style="cursor:pointer;font-weight:700;color:var(--ink);text-decoration:underline;text-decoration-color:rgba(184,134,11,0.4)">${spouseOf.name}</span>`;
-    document.getElementById('d-spouse').querySelector('.detail-name-link').addEventListener('click',()=>{ closeDetail(); openDetail(spouseOf.id); });
+    document.getElementById('d-spouse').innerHTML = `<span style="font-weight:700;color:var(--ink)">${spouseOf.name}</span>`;
   } else if (spouses.length > 0) {
     // Orang ini kepala keluarga — punya istri/suami
     const label = p.gender==='M' ? 'Istri' : 'Suami';
     document.getElementById('d-spouse-lbl').textContent = label;
-    document.getElementById('d-spouse').innerHTML = spouses.map(s=>
-      `<span class="detail-name-link" data-pid="${s.id}" style="cursor:pointer;font-weight:700;color:var(--ink);text-decoration:underline;text-decoration-color:rgba(184,134,11,0.4)">${s.name}</span>`
-    ).join(', ');
-    document.getElementById('d-spouse').querySelectorAll('.detail-name-link').forEach(el=>{
-      el.addEventListener('click',()=>{ closeDetail(); openDetail(el.dataset.pid); });
-    });
+    document.getElementById('d-spouse').innerHTML = spouses.map(s=>`<span style="font-weight:700;color:var(--ink)">${s.name}</span>`).join(', ');
   } else {
     document.getElementById('d-spouse-lbl').textContent = 'Pasangan';
     document.getElementById('d-spouse').textContent = '—';
@@ -1856,16 +1895,16 @@ function openDetail(id) {
   }
   // chain
   const chain=buildChain(id), chainEl=document.getElementById('d-chain'); chainEl.innerHTML='';
-  chain.forEach((item,i)=>{
+  // Skip i===0 (diri sendiri) — langsung mulai dari leluhur
+  chain.slice(1).forEach((item,i)=>{
     const row=document.createElement('div'); row.className='ncb-row';
-    const badge=document.createElement('div'); badge.className='ncb-badge'+(i===0?' self':''); badge.textContent=i===0?'★':i;
+    const badge=document.createElement('div'); badge.className='ncb-badge'; badge.textContent=i+1;
     const nameEl=document.createElement('span'); nameEl.className='ncb-name';
-    const prev=chain[i-1];
-    nameEl.textContent=i===0?item.person.name:((item.person.gender==='M'?'bin ':'binti ')+item.person.name);
+    nameEl.textContent=(item.person.gender==='M'?'bin ':'binti ')+item.person.name;
     nameEl.title='Klik untuk lihat detail';
     nameEl.addEventListener('click',()=>{ closeDetail(); openDetail(item.person.id); });
     row.appendChild(badge); row.appendChild(nameEl); chainEl.appendChild(row);
-    if(i<chain.length-1){ const conn=document.createElement('div'); conn.className='ncb-connector'; conn.textContent='→'; chainEl.appendChild(conn); }
+    if(i<chain.length-2){ const conn=document.createElement('div'); conn.className='ncb-connector'; conn.textContent='→'; chainEl.appendChild(conn); }
   });
   // admin buttons
   document.getElementById('d-edit-btn').onclick=()=>{ closeDetail(); openEditForm(id); };
@@ -2224,6 +2263,139 @@ async function clearAllData() {
   await saveToStorage();
   hideLoading();
   showToast('✓ Semua data dihapus');
+}
+
+// ══════════════════════════════════════
+// FITUR CEK KEKERABATAN
+// ══════════════════════════════════════
+function openKerabat() {
+  document.getElementById('kerabat-overlay').classList.add('open');
+  document.getElementById('kr-input-1').value='';
+  document.getElementById('kr-input-2').value='';
+  document.getElementById('kr-id-1').value='';
+  document.getElementById('kr-id-2').value='';
+  document.getElementById('kerabat-result').style.display='none';
+  setTimeout(()=>document.getElementById('kr-input-1').focus(),100);
+}
+function closeKerabat() {
+  document.getElementById('kerabat-overlay').classList.remove('open');
+  document.getElementById('kr-drop-1').style.display='none';
+  document.getElementById('kr-drop-2').style.display='none';
+}
+function krSearch(num, q) {
+  const drop = document.getElementById('kr-drop-'+num);
+  if (!q || q.length < 1) { drop.style.display='none'; return; }
+  const hits = persons.filter(p=>p.name.toLowerCase().includes(q.toLowerCase())).slice(0,8);
+  if (!hits.length) { drop.style.display='none'; return; }
+  drop.innerHTML = '';
+  hits.forEach(p=>{
+    const d = document.createElement('div');
+    d.style.cssText = 'padding:8px 12px;cursor:pointer;font-size:0.88rem;border-bottom:1px solid #f0e8d0;display:flex;gap:8px;align-items:center';
+    d.innerHTML = `<span style="font-size:0.7rem;color:#9a8060">Gen ${p.gen}</span><span>${p.name}</span>`;
+    d.onmousedown = ()=>{
+      document.getElementById('kr-input-'+num).value = p.name;
+      document.getElementById('kr-id-'+num).value = p.id;
+      drop.style.display='none';
+    };
+    d.onmouseover = ()=>d.style.background='#fdf4dc';
+    d.onmouseout = ()=>d.style.background='';
+    drop.appendChild(d);
+  });
+  drop.style.display='block';
+}
+function getAncestors(id) {
+  const result = {};
+  const visited = new Set();
+  function walk(pid, depth) {
+    if (!pid || visited.has(pid)) return;
+    visited.add(pid);
+    result[pid] = depth;
+    const p = persons.find(x=>x.id===pid);
+    if (!p) return;
+    if (p.parentId) {
+      const par = persons.find(x=>x.id===p.parentId);
+      if (par) {
+        const head = par.spouseOf ? (persons.find(x=>x.id===par.spouseOf)||par) : par;
+        walk(head.id, depth+1);
+        // Juga masukkan si ibu (par) sebagai leluhur
+        if(!visited.has(par.id)){ visited.add(par.id); result[par.id]=depth+1; }
+      }
+    }
+    // Jika dia pasangan (spouseOf), juga naik dari sisi dirinya
+    if (p.spouseOf) {
+      const head = persons.find(x=>x.id===p.spouseOf);
+      if (head && !visited.has(head.id)) walk(head.id, depth);
+    }
+  }
+  walk(id, 0);
+  return result;
+}
+function cekKerabat() {
+  const id1 = document.getElementById('kr-id-1').value;
+  const id2 = document.getElementById('kr-id-2').value;
+  const resultEl = document.getElementById('kerabat-result');
+  if (!id1 || !id2) { alert('Pilih dua nama terlebih dahulu!'); return; }
+  if (id1 === id2) {
+    resultEl.style.display='block';
+    document.getElementById('kr-hubungan').textContent='😄 Orang yang sama!';
+    document.getElementById('kr-detail').textContent='';
+    document.getElementById('kr-jalur').textContent='';
+    return;
+  }
+  const p1 = persons.find(x=>x.id===id1);
+  const p2 = persons.find(x=>x.id===id2);
+  const anc1 = getAncestors(id1);
+  const anc2 = getAncestors(id2);
+  let lca = null, d1 = 999, d2 = 999;
+  for (const aid in anc1) {
+    if (anc2[aid] !== undefined && anc1[aid]+anc2[aid] < d1+d2) {
+      lca = aid; d1 = anc1[aid]; d2 = anc2[aid];
+    }
+  }
+  resultEl.style.display='block';
+  const lcaPerson = lca ? persons.find(x=>x.id===lca) : null;
+  if (!lca) {
+    document.getElementById('kr-hubungan').textContent='❌ Tidak ditemukan hubungan';
+    document.getElementById('kr-detail').textContent='Kedua orang tidak memiliki leluhur yang sama dalam silsilah ini.';
+    document.getElementById('kr-jalur').textContent='';
+    return;
+  }
+  let hubungan='', detail='';
+  if (d1===0) {
+    if (d2===1) hubungan=`👨‍👧 ${p1.name} adalah Orang Tua dari ${p2.name}`;
+    else if (d2===2) hubungan=`👴 ${p1.name} adalah Kakek/Nenek dari ${p2.name}`;
+    else hubungan=`🌳 ${p1.name} adalah Leluhur ke-${d2} dari ${p2.name}`;
+    detail=`Jarak: ${d2} generasi ke bawah`;
+  } else if (d2===0) {
+    if (d1===1) hubungan=`👨‍👧 ${p2.name} adalah Orang Tua dari ${p1.name}`;
+    else if (d1===2) hubungan=`👴 ${p2.name} adalah Kakek/Nenek dari ${p1.name}`;
+    else hubungan=`🌳 ${p2.name} adalah Leluhur ke-${d1} dari ${p1.name}`;
+    detail=`Jarak: ${d1} generasi ke bawah`;
+  } else if (d1===1&&d2===1) {
+    hubungan=`👫 Saudara Kandung`;
+    detail=`${p1.name} dan ${p2.name} adalah saudara kandung — anak dari ${lcaPerson?lcaPerson.name:'orang tua yang sama'}.`;
+  } else if (d1===1&&d2===2) {
+    hubungan=`👨‍👧 ${p1.name} adalah Paman/Bibi dari ${p2.name}`;
+    detail=`${p2.name} adalah keponakan dari ${p1.name}. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
+  } else if (d1===2&&d2===1) {
+    hubungan=`👨‍👧 ${p2.name} adalah Paman/Bibi dari ${p1.name}`;
+    detail=`${p1.name} adalah keponakan dari ${p2.name}. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
+  } else if (d1===2&&d2===2) {
+    hubungan=`👫 Sepupu`;
+    detail=`${p1.name} dan ${p2.name} adalah sepupu — cucunya ${lcaPerson?lcaPerson.name:'leluhur bersama'}.`;
+  } else if (d1===3&&d2===3) {
+    hubungan=`👫 Sepupu Dua Kali`;
+    detail=`${p1.name} dan ${p2.name} adalah sepupu dua kali.`;
+  } else if ((d1===2&&d2===3)||(d1===3&&d2===2)) {
+    hubungan=`🔗 Keponakan Jauh`;
+    detail=`Jarak dari leluhur bersama: ${p1.name}=${d1} generasi, ${p2.name}=${d2} generasi.`;
+  } else {
+    hubungan=`🔗 Kerabat Jauh`;
+    detail=`Jarak dari leluhur bersama (${lcaPerson?lcaPerson.name:'-'}): ${p1.name}=${d1} generasi, ${p2.name}=${d2} generasi.`;
+  }
+  document.getElementById('kr-hubungan').textContent=hubungan;
+  document.getElementById('kr-detail').textContent=detail;
+  document.getElementById('kr-jalur').textContent=lcaPerson?`Leluhur bersama: ${lcaPerson.name} (Gen ${lcaPerson.gen})`:'';
 }
 
 // ── INIT ──
