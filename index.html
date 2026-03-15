@@ -2361,37 +2361,69 @@ function cekKerabat() {
     return;
   }
   let hubungan='', detail='';
-  if (d1===0) {
-    if (d2===1) hubungan=`👨‍👧 ${p1.name} adalah Orang Tua dari ${p2.name}`;
-    else if (d2===2) hubungan=`👴 ${p1.name} adalah Kakek/Nenek dari ${p2.name}`;
-    else hubungan=`🌳 ${p1.name} adalah Leluhur ke-${d2} dari ${p2.name}`;
-    detail=`Jarak: ${d2} generasi ke bawah`;
-  } else if (d2===0) {
-    if (d1===1) hubungan=`👨‍👧 ${p2.name} adalah Orang Tua dari ${p1.name}`;
-    else if (d1===2) hubungan=`👴 ${p2.name} adalah Kakek/Nenek dari ${p1.name}`;
-    else hubungan=`🌳 ${p2.name} adalah Leluhur ke-${d1} dari ${p1.name}`;
-    detail=`Jarak: ${d1} generasi ke bawah`;
+  const ortu1 = p1.gender==='M'?'Ayah':'Ibu';
+  const ortu2 = p2.gender==='M'?'Ayah':'Ibu';
+  const kk1 = p1.gender==='M'?'Kakek':'Nenek';
+  const kk2 = p2.gender==='M'?'Kakek':'Nenek';
+  const pb1 = p1.gender==='M'?'Paman':'Bibi';
+  const pb2 = p2.gender==='M'?'Paman':'Bibi';
+  const cc1 = p1.gender==='M'?'Cucu Laki-laki':'Cucu Perempuan';
+  const cc2 = p2.gender==='M'?'Cucu Laki-laki':'Cucu Perempuan';
+
+  if (d1===0 && d2===1) {
+    hubungan=`👨‍👧 ${p1.name} adalah ${ortu1} dari ${p2.name}`;
+    detail='';
+  } else if (d1===0 && d2===2) {
+    hubungan=`👴 ${p1.name} adalah ${kk1} dari ${p2.name}`;
+    detail='';
+  } else if (d1===0 && d2===3) {
+    hubungan=`🌳 ${p1.name} adalah Buyut dari ${p2.name}`;
+    detail='';
+  } else if (d1===0 && d2>3) {
+    hubungan=`🌳 ${p1.name} adalah Leluhur Jauh dari ${p2.name}`;
+    detail=`Jarak ${d2} generasi ke bawah. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
+  } else if (d2===0 && d1===1) {
+    hubungan=`👨‍👧 ${p2.name} adalah ${ortu2} dari ${p1.name}`;
+    detail='';
+  } else if (d2===0 && d1===2) {
+    hubungan=`👴 ${p2.name} adalah ${kk2} dari ${p1.name}`;
+    detail='';
+  } else if (d2===0 && d1===3) {
+    hubungan=`🌳 ${p2.name} adalah Buyut dari ${p1.name}`;
+    detail='';
+  } else if (d2===0 && d1>3) {
+    hubungan=`🌳 ${p2.name} adalah Leluhur Jauh dari ${p1.name}`;
+    detail=`Jarak ${d1} generasi ke bawah. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
   } else if (d1===1&&d2===1) {
     hubungan=`👫 Saudara Kandung`;
     detail=`${p1.name} dan ${p2.name} adalah saudara kandung — anak dari ${lcaPerson?lcaPerson.name:'orang tua yang sama'}.`;
   } else if (d1===1&&d2===2) {
-    hubungan=`👨‍👧 ${p1.name} adalah Paman/Bibi dari ${p2.name}`;
-    detail=`${p2.name} adalah keponakan dari ${p1.name}. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
+    hubungan=`👨‍👧 ${p1.name} adalah ${pb1} dari ${p2.name}`;
+    detail=`Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
   } else if (d1===2&&d2===1) {
-    hubungan=`👨‍👧 ${p2.name} adalah Paman/Bibi dari ${p1.name}`;
-    detail=`${p1.name} adalah keponakan dari ${p2.name}. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
+    hubungan=`👨‍👧 ${p2.name} adalah ${pb2} dari ${p1.name}`;
+    detail=`Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
+  } else if (d1===1&&d2===3) {
+    hubungan=`👨‍👧 ${p1.name} adalah Paman/Bibi Jauh dari ${p2.name}`;
+    detail=`${p2.name} adalah keponakan jauh dari ${p1.name}. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
+  } else if (d1===3&&d2===1) {
+    hubungan=`👨‍👧 ${p2.name} adalah Paman/Bibi Jauh dari ${p1.name}`;
+    detail=`${p1.name} adalah keponakan jauh dari ${p2.name}. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
   } else if (d1===2&&d2===2) {
     hubungan=`👫 Sepupu`;
     detail=`${p1.name} dan ${p2.name} adalah sepupu — cucunya ${lcaPerson?lcaPerson.name:'leluhur bersama'}.`;
+  } else if (d1===2&&d2===3) {
+    hubungan=`👫 Keponakan Sepupu`;
+    detail=`${p1.name} adalah sepupu dari orang tua ${p2.name}. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
+  } else if (d1===3&&d2===2) {
+    hubungan=`👫 Keponakan Sepupu`;
+    detail=`${p2.name} adalah sepupu dari orang tua ${p1.name}. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
   } else if (d1===3&&d2===3) {
     hubungan=`👫 Sepupu Dua Kali`;
-    detail=`${p1.name} dan ${p2.name} adalah sepupu dua kali.`;
-  } else if ((d1===2&&d2===3)||(d1===3&&d2===2)) {
-    hubungan=`🔗 Keponakan Jauh`;
-    detail=`Jarak dari leluhur bersama: ${p1.name}=${d1} generasi, ${p2.name}=${d2} generasi.`;
+    detail=`${p1.name} dan ${p2.name} adalah sepupu dua kali — cicitnya ${lcaPerson?lcaPerson.name:'leluhur bersama'}.`;
   } else {
     hubungan=`🔗 Kerabat Jauh`;
-    detail=`Jarak dari leluhur bersama (${lcaPerson?lcaPerson.name:'-'}): ${p1.name}=${d1} generasi, ${p2.name}=${d2} generasi.`;
+    detail=`${p1.name} dan ${p2.name} masih berhubungan darah namun jauh. Jarak dari leluhur bersama (${lcaPerson?lcaPerson.name:'-'}): ${p1.name} = ${d1} generasi, ${p2.name} = ${d2} generasi.`;
   }
   document.getElementById('kr-hubungan').textContent=hubungan;
   document.getElementById('kr-detail').textContent=detail;
