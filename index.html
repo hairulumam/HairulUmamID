@@ -2454,6 +2454,12 @@ function cekKerabat() {
   } else if (d1===3&&d2===3) {
     hubungan=`👫 Sepupu Dua Kali`;
     detail=`${p1.name} dan ${p2.name} adalah sepupu dua kali — cicitnya ${lcaPerson?lcaPerson.name:'leluhur bersama'}.`;
+  } else if (d1===2&&d2===4) {
+    hubungan=`🔗 Keponakan Sepupu (tingkat 2)`;
+    detail=`${p1.name} adalah sepupu kakek/nenek dari ${p2.name}. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
+  } else if (d1===4&&d2===2) {
+    hubungan=`🔗 Keponakan Sepupu (tingkat 2)`;
+    detail=`${p2.name} adalah sepupu kakek/nenek dari ${p1.name}. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
   } else {
     hubungan=`🔗 Kerabat Jauh`;
     detail=`${p1.name} dan ${p2.name} masih berhubungan darah namun jauh. Jarak dari leluhur bersama (${lcaPerson?lcaPerson.name:'-'}): ${p1.name} = ${d1} generasi, ${p2.name} = ${d2} generasi.`;
