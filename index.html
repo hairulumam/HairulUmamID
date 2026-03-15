@@ -2285,23 +2285,49 @@ function closeKerabat() {
 function krSearch(num, q) {
   const drop = document.getElementById('kr-drop-'+num);
   if (!q || q.length < 1) { drop.style.display='none'; return; }
-  const hits = persons.filter(p=>p.name.toLowerCase().includes(q.toLowerCase())).slice(0,8);
-  if (!hits.length) { drop.style.display='none'; return; }
+  // Filter gen>0 saja, exclude pasangan (spouseOf) jika ada versi parentId-nya
+  const allHits = persons.filter(p => p.gen > 0 && p.name.toLowerCase().includes(q.toLowerCase())).sort((a,b) => b.gen - a.gen);
+  // Dedup: kalau ada nama sama, prioritaskan yang punya parentId
+  const dedup = [];
+  allHits.forEach(p => {
+    const same = dedup.filter(x => x.name.trim().toLowerCase() === p.name.trim().toLowerCase());
+    if (!same.length) { dedup.push(p); }
+    else {
+      same.forEach(ex => { if (p.parentId && !ex.parentId && ex.spouseOf) { const i=dedup.indexOf(ex); dedup.splice(i,1,p); } });
+      if (p.parentId && same.every(x=>x.parentId)) dedup.push(p);
+    }
+  });
+  // Reset ID saat user mengetik ulang (belum pilih dari dropdown)
+  document.getElementById('kr-id-'+num).value = '';
+  const hits = dedup.slice(0, 10);
+  if (!hits.length) {
+    drop.innerHTML = '<div style="padding:12px 14px;font-size:0.85rem;color:#9a8060;font-style:italic;text-align:center">Tidak ditemukan dalam silsilah</div>';
+    drop.style.display = 'block';
+    return;
+  }
   drop.innerHTML = '';
-  hits.forEach(p=>{
+  hits.forEach(p => {
+    const ini = p.name.replace(/^(KH\.|H\.|Hj\.|Nyai|Ny\.)\s*/i,'').split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase().substring(0,2);
+    const nasab = getNasabShort(p.id);
     const d = document.createElement('div');
-    d.style.cssText = 'padding:8px 12px;cursor:pointer;font-size:0.88rem;border-bottom:1px solid #f0e8d0;display:flex;gap:8px;align-items:center';
-    d.innerHTML = `<span style="font-size:0.7rem;color:#9a8060">Gen ${p.gen}</span><span>${p.name}</span>`;
-    d.onmousedown = ()=>{
+    d.style.cssText = 'padding:8px 12px;cursor:pointer;border-bottom:1px solid #f0e8d0;display:flex;gap:10px;align-items:center;transition:background 0.1s';
+    d.innerHTML = `
+      <div style="width:32px;height:32px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700;background:${p.gender==='M'?'#e8f4f2':'#faedf1'};color:${p.gender==='M'?'#1a5c52':'#7a2040'}">${ini}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:0.88rem;font-weight:600;color:#3d2e14">${p.name}</div>
+        ${nasab ? `<div style="font-size:0.7rem;color:#9a8060;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-style:italic">${nasab}</div>` : ''}
+      </div>
+      <div style="font-size:0.68rem;color:#9a8060;flex-shrink:0;background:#f7f0e3;padding:2px 7px;border-radius:10px">Gen ${p.gen}</div>`;
+    d.onmousedown = () => {
       document.getElementById('kr-input-'+num).value = p.name;
       document.getElementById('kr-id-'+num).value = p.id;
-      drop.style.display='none';
+      drop.style.display = 'none';
     };
-    d.onmouseover = ()=>d.style.background='#fdf4dc';
-    d.onmouseout = ()=>d.style.background='';
+    d.onmouseover = () => d.style.background = '#fdf4dc';
+    d.onmouseout  = () => d.style.background = '';
     drop.appendChild(d);
   });
-  drop.style.display='block';
+  drop.style.display = 'block';
 }
 function getAncestors(id) {
   const result = {};
@@ -2334,7 +2360,14 @@ function cekKerabat() {
   const id1 = document.getElementById('kr-id-1').value;
   const id2 = document.getElementById('kr-id-2').value;
   const resultEl = document.getElementById('kerabat-result');
-  if (!id1 || !id2) { alert('Pilih dua nama terlebih dahulu!'); return; }
+  if (!id1 || !id2) {
+    const resultEl2 = document.getElementById('kerabat-result');
+    resultEl2.style.display = 'block';
+    document.getElementById('kr-hubungan').textContent = '⚠️ Pilih nama dari daftar dropdown';
+    document.getElementById('kr-detail').textContent = 'Pastikan kedua nama dipilih dari hasil pencarian, bukan diketik manual. Jika nama tidak ditemukan, berarti tidak ada dalam silsilah.';
+    document.getElementById('kr-jalur').textContent = '';
+    return;
+  }
   if (id1 === id2) {
     resultEl.style.display='block';
     document.getElementById('kr-hubungan').textContent='😄 Orang yang sama!';
