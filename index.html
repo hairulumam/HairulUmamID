@@ -1832,15 +1832,21 @@ function openDetail(id) {
     const par = persons.find(x=>x.id===p.parentId);
     if (par) {
       if (par.spouseOf) {
-        // parentId menunjuk ke pasangan → dia ibu, kepala keluarga adalah ayah
-        motherEntry = par;
-        fatherEntry = persons.find(x=>x.id===par.spouseOf) || null;
+        // parentId menunjuk ke pasangan — tentukan ayah/ibu berdasarkan GENDER
+        const head = persons.find(x=>x.id===par.spouseOf) || null;
+        if (par.gender === 'F') { motherEntry = par; fatherEntry = head; }
+        else { fatherEntry = par; motherEntry = head; }
       } else {
-        // parentId menunjuk ke kepala keluarga langsung
-        fatherEntry = par;
-        // cari pasangan (istri) yang punya anak ini
-        const wives = persons.filter(w=>w.spouseOf===par.id);
-        motherEntry = wives.find(w=>persons.some(c=>c.parentId===w.id && c.id===p.id)) || null;
+        // parentId menunjuk ke kepala keluarga langsung — tentukan berdasarkan GENDER
+        if (par.gender === 'M') {
+          fatherEntry = par;
+          const spouses = persons.filter(w=>w.spouseOf===par.id);
+          motherEntry = spouses.find(w=>w.gender==='F' && persons.some(c=>c.parentId===w.id && c.id===p.id)) || null;
+        } else {
+          motherEntry = par;
+          const spouses = persons.filter(w=>w.spouseOf===par.id);
+          fatherEntry = spouses.find(w=>w.gender==='M' && persons.some(c=>c.parentId===w.id && c.id===p.id)) || null;
+        }
       }
     }
   }
@@ -2377,6 +2383,30 @@ function cekKerabat() {
   }
   const p1 = persons.find(x=>x.id===id1);
   const p2 = persons.find(x=>x.id===id2);
+
+  // ── Cek pasangan dulu sebelum hitung leluhur ──
+  const isSpouse = (p1.spouseOf === id2) || (p2.spouseOf === id1) ||
+                   (p1.spouseOf && p1.spouseOf === p2.spouseOf); // co-wife
+  if (isSpouse) {
+    resultEl.style.display = 'block';
+    const label1 = p1.gender==='M' ? 'Suami' : 'Istri';
+    const label2 = p2.gender==='M' ? 'Suami' : 'Istri';
+    let hub = '', det = '';
+    if (p1.spouseOf === id2) {
+      hub = `💍 ${p1.name} adalah ${label1} dari ${p2.name}`;
+      det = p1.wifeOrder > 1 ? `Pernikahan ke-${p1.wifeOrder}` : 'Pasangan pertama';
+    } else if (p2.spouseOf === id1) {
+      hub = `💍 ${p2.name} adalah ${label2} dari ${p1.name}`;
+      det = p2.wifeOrder > 1 ? `Pernikahan ke-${p2.wifeOrder}` : 'Pasangan pertama';
+    } else {
+      hub = `💍 ${p1.name} dan ${p2.name} adalah sesama istri`;
+      det = 'Keduanya adalah istri dari suami yang sama.';
+    }
+    document.getElementById('kr-hubungan').textContent = hub;
+    document.getElementById('kr-detail').textContent = det;
+    document.getElementById('kr-jalur').textContent = '';
+    return;
+  }
   const anc1 = getAncestors(id1);
   const anc2 = getAncestors(id2);
   let lca = null, d1 = 999, d2 = 999;
