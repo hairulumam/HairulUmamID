@@ -481,14 +481,17 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
 .modal-parents .mp-name-link:hover { color:var(--teal); }
 .modal-body { padding:22px 26px 26px; }
 
+.ncb-steps::-webkit-scrollbar { height:4px; }
+.ncb-steps::-webkit-scrollbar-track { background:transparent; }
+.ncb-steps::-webkit-scrollbar-thumb { background:rgba(184,134,11,0.3); border-radius:2px; }
 .nasab-chain-box {
   background:linear-gradient(135deg,var(--gold-bg),var(--parch2));
   border:1px solid var(--gold-light); border-left:4px solid var(--gold2);
   border-radius:6px; padding:14px 16px; margin-bottom:18px;
 }
 .ncb-label { font-size:0.65rem; letter-spacing:2px; text-transform:uppercase; color:var(--gold); font-weight:700; margin-bottom:10px; }
-.ncb-steps { display:flex; flex-direction:column; gap:5px; }
-.ncb-row { display:flex; align-items:center; gap:8px; }
+.ncb-steps { display:flex; flex-direction:row; align-items:center; gap:0; flex-wrap:wrap; }
+.ncb-row { display:flex; align-items:center; gap:6px; flex-shrink:0; }
 .ncb-badge {
   width:22px; height:22px; border-radius:50%; flex-shrink:0;
   display:flex; align-items:center; justify-content:center;
@@ -498,11 +501,12 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
 .ncb-badge.self { background:var(--gold2); color:#fff; border-color:var(--gold); }
 .ncb-name { font-size:0.88rem; color:var(--ink2); cursor:pointer; font-family:'Lora',serif; }
 .ncb-name:hover { color:var(--teal); text-decoration:underline; }
-.ncb-connector { font-size:0.72rem; color:var(--ink4); font-style:italic; padding-left:30px; }
+.ncb-connector { font-size:0.72rem; color:var(--ink4); font-style:italic; padding:0 4px; flex-shrink:0; }
 .detail-grid { display:flex; flex-direction:column; gap:10px; }
 .detail-row { display:flex; gap:12px; font-size:0.88rem; }
 .detail-lbl { min-width:96px; color:var(--ink4); flex-shrink:0; font-size:0.78rem; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; padding-top:1px; }
 .detail-val { color:var(--ink2); line-height:1.5; }
+#d-spouse, #d-children { font-weight:700; color:var(--ink); }
 .modal-divider { border:none; border-top:1px solid var(--border2); margin:18px 0; }
 .modal-actions { display:flex; gap:8px; flex-wrap:wrap; }
 
@@ -823,7 +827,8 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
   }
   .ncb-badge.self { background: #b8860b !important; color: #fff !important; }
   .ncb-name { color: #3d2e14 !important; }
-  .ncb-connector { color: #9a8060 !important; }
+  .ncb-connector { color: #9a8060 !important; padding: 0 4px !important; }
+  .ncb-steps { flex-direction: row !important; flex-wrap: wrap !important; }
 
   /* detail grid */
   .detail-lbl { color: #9a8060 !important; }
@@ -1080,7 +1085,7 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
     <div class="modal-body">
       <div class="detail-grid">
         <div class="detail-row"><div class="detail-lbl">Generasi</div><div class="detail-val" id="d-gen"></div></div>
-        <div class="detail-row"><div class="detail-lbl">Pasangan</div><div class="detail-val" id="d-spouse"></div></div>
+        <div class="detail-row"><div class="detail-lbl" id="d-spouse-lbl">Pasangan</div><div class="detail-val" id="d-spouse"></div></div>
         <div class="detail-row"><div class="detail-lbl">Anak-anak</div><div class="detail-val" id="d-children"></div></div>
         <div class="detail-row"><div class="detail-lbl">Catatan</div><div class="detail-val" id="d-note"></div></div>
       </div>
@@ -1796,12 +1801,12 @@ function openDetail(id) {
   if (fatherEntry || motherEntry) {
     const hubungan = p.gender==='M' ? 'Putra' : 'Putri';
     parentsEl.style.display = '';
-    const ayah = fatherEntry ? `<span class="mp-name-link" data-pid="${fatherEntry.id}">${fatherEntry.name}</span>` : null;
-    const ibu  = motherEntry ? `<span class="mp-name-link" data-pid="${motherEntry.id}">${motherEntry.name}</span>` : null;
+    const ayahLink = fatherEntry ? `<span class="mp-name-link" data-pid="${fatherEntry.id}">${fatherEntry.name}</span>` : null;
+    const ibuLink  = motherEntry ? `<span class="mp-name-link" data-pid="${motherEntry.id}">${motherEntry.name}</span>` : null;
     let teks = '';
-    if (ayah && ibu) teks = `${ayah} &amp; ${ibu}`;
-    else if (ayah) teks = ayah;
-    else teks = ibu;
+    if (ayahLink && ibuLink) teks = `Bapak ${ayahLink} dan Ibu ${ibuLink}`;
+    else if (ayahLink) teks = `Bapak ${ayahLink}`;
+    else teks = `Ibu ${ibuLink}`;
     parentsEl.innerHTML = `<div class="mp-label">${hubungan} dari</div><div class="mp-names">${teks}</div>`;
     parentsEl.querySelectorAll('.mp-name-link').forEach(el=>{
       el.addEventListener('click',()=>{ closeDetail(); openDetail(el.dataset.pid); });
@@ -1813,11 +1818,25 @@ function openDetail(id) {
   document.getElementById('d-note').textContent=p.note||'—';
   const spouses=persons.filter(s=>s.spouseOf===id);
   const spouseOf=p.spouseOf?persons.find(x=>x.id===p.spouseOf):null;
-  document.getElementById('d-spouse').textContent=(spouseOf?[spouseOf]:spouses).map(s=>s.name).join(', ')||'—';
+  // Label dan isi pasangan: Istri/Suami
+  if (spouseOf) {
+    // Orang ini adalah pasangan (spouseOf) — dia istri/suami dari kepala keluarga
+    const label = p.gender==='F' ? 'Suami' : 'Istri';
+    document.getElementById('d-spouse-lbl').textContent = label;
+    document.getElementById('d-spouse').textContent = spouseOf.name;
+  } else if (spouses.length > 0) {
+    // Orang ini kepala keluarga — punya istri/suami
+    const label = p.gender==='M' ? 'Istri' : 'Suami';
+    document.getElementById('d-spouse-lbl').textContent = label;
+    document.getElementById('d-spouse').textContent = spouses.map(s=>s.name).join(', ');
+  } else {
+    document.getElementById('d-spouse-lbl').textContent = 'Pasangan';
+    document.getElementById('d-spouse').textContent = '—';
+  }
   const ownSps=persons.filter(s=>s.spouseOf===id);
   const children=persons.filter(c=>[p,...ownSps].some(ap=>ap.id===c.parentId));
   children.sort((a,b)=>{ const ao=a.order!=null?a.order:9999,bo=b.order!=null?b.order:9999; if(ao!==bo)return ao-bo; return persons.indexOf(a)-persons.indexOf(b); });
-  document.getElementById('d-children').textContent=children.map(c=>c.name).join(', ')||'—';
+  document.getElementById('d-children').textContent=children.length ? children.map((c,i)=>`${i+1}. ${c.name}`).join(', ') : '—';
   // chain
   const chain=buildChain(id), chainEl=document.getElementById('d-chain'); chainEl.innerHTML='';
   chain.forEach((item,i)=>{
@@ -1829,7 +1848,7 @@ function openDetail(id) {
     nameEl.title='Klik untuk lihat detail';
     nameEl.addEventListener('click',()=>{ closeDetail(); openDetail(item.person.id); });
     row.appendChild(badge); row.appendChild(nameEl); chainEl.appendChild(row);
-    if(i<chain.length-1){ const conn=document.createElement('div'); conn.className='ncb-connector'; conn.textContent='↓'; chainEl.appendChild(conn); }
+    if(i<chain.length-1){ const conn=document.createElement('div'); conn.className='ncb-connector'; conn.textContent='→'; chainEl.appendChild(conn); }
   });
   // admin buttons
   document.getElementById('d-edit-btn').onclick=()=>{ closeDetail(); openEditForm(id); };
