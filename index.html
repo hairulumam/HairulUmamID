@@ -1130,14 +1130,14 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
       <div class="kerabat-row">
         <div style="flex:1;position:relative">
           <input class="form-input" id="kr-input-1" placeholder="🔍 Nama pertama..." autocomplete="off" oninput="krSearch(1,this.value)" onfocus="krSearch(1,this.value)">
-          <div id="kr-drop-1" style="display:none;position:absolute;z-index:999;width:100%;max-height:180px;overflow-y:auto;background:#fff;border:1.5px solid #d4c4a0;border-top:none;border-radius:0 0 8px 8px;box-shadow:0 8px 24px rgba(0,0,0,0.12)"></div>
+          <div id="kr-drop-1" style="display:none;position:absolute;z-index:999;width:100%;max-height:min(260px,40vh);overflow-y:auto;background:#fff;border:1.5px solid #d4c4a0;border-top:none;border-radius:0 0 8px 8px;box-shadow:0 8px 24px rgba(0,0,0,0.12);-webkit-overflow-scrolling:touch;touch-action:pan-y"></div>
         </div>
         <input type="hidden" id="kr-id-1">
       </div>
       <div class="kerabat-row">
         <div style="flex:1;position:relative">
           <input class="form-input" id="kr-input-2" placeholder="🔍 Nama kedua..." autocomplete="off" oninput="krSearch(2,this.value)" onfocus="krSearch(2,this.value)">
-          <div id="kr-drop-2" style="display:none;position:absolute;z-index:999;width:100%;max-height:180px;overflow-y:auto;background:#fff;border:1.5px solid #d4c4a0;border-top:none;border-radius:0 0 8px 8px;box-shadow:0 8px 24px rgba(0,0,0,0.12)"></div>
+          <div id="kr-drop-2" style="display:none;position:absolute;z-index:999;width:100%;max-height:min(260px,40vh);overflow-y:auto;background:#fff;border:1.5px solid #d4c4a0;border-top:none;border-radius:0 0 8px 8px;box-shadow:0 8px 24px rgba(0,0,0,0.12);-webkit-overflow-scrolling:touch;touch-action:pan-y"></div>
         </div>
         <input type="hidden" id="kr-id-2">
       </div>
@@ -2316,7 +2316,7 @@ function krSearch(num, q) {
     const ini = p.name.replace(/^(KH\.|H\.|Hj\.|Nyai|Ny\.)\s*/i,'').split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase().substring(0,2);
     const nasab = getNasabShort(p.id);
     const d = document.createElement('div');
-    d.style.cssText = 'padding:8px 12px;cursor:pointer;border-bottom:1px solid #f0e8d0;display:flex;gap:10px;align-items:center;transition:background 0.1s';
+    d.style.cssText = 'padding:12px 14px;cursor:pointer;border-bottom:1px solid #f0e8d0;display:flex;gap:10px;align-items:center;transition:background 0.1s;min-height:52px';
     d.innerHTML = `
       <div style="width:32px;height:32px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700;background:${p.gender==='M'?'#e8f4f2':'#faedf1'};color:${p.gender==='M'?'#1a5c52':'#7a2040'}">${ini}</div>
       <div style="flex:1;min-width:0">
@@ -2490,10 +2490,10 @@ function cekKerabat() {
     detail=`${p1.name} dan ${p2.name} adalah sepupu dua kali — cicitnya ${lcaPerson?lcaPerson.name:'leluhur bersama'}.`;
   } else if (d1===2&&d2===4) {
     hubungan=`🔗 Keponakan Sepupu (tingkat 2)`;
-    detail=`${p1.name} adalah sepupu kakek/nenek dari ${p2.name}. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
+    detail=`${p1.name} adalah sepupu dari nenek/kakek ${p2.name}. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
   } else if (d1===4&&d2===2) {
     hubungan=`🔗 Keponakan Sepupu (tingkat 2)`;
-    detail=`${p2.name} adalah sepupu kakek/nenek dari ${p1.name}. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
+    detail=`${p2.name} adalah sepupu dari nenek/kakek ${p1.name}. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
   } else {
     hubungan=`🔗 Kerabat Jauh`;
     detail=`${p1.name} dan ${p2.name} masih berhubungan darah namun jauh. Jarak dari leluhur bersama (${lcaPerson?lcaPerson.name:'-'}): ${p1.name} = ${d1} generasi, ${p2.name} = ${d2} generasi.`;
