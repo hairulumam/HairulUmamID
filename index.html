@@ -2431,17 +2431,21 @@ function cekKerabat() {
     hubungan=`👫 Saudara Kandung`;
     detail=`${p1.name} dan ${p2.name} adalah saudara kandung — anak dari ${lcaPerson?lcaPerson.name:'orang tua yang sama'}.`;
   } else if (d1===1&&d2===2) {
-    hubungan=`👨‍👧 ${p1.name} adalah ${pb1} dari ${p2.name}`;
+    const pbLabel = p1.gender==='M' ? 'Saudara Laki-laki Ayah/Ibu' : 'Saudara Perempuan Ayah/Ibu';
+    hubungan=`👨‍👧 ${p1.name} adalah ${pbLabel} dari ${p2.name}`;
     detail=`Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
   } else if (d1===2&&d2===1) {
-    hubungan=`👨‍👧 ${p2.name} adalah ${pb2} dari ${p1.name}`;
+    const pbLabel = p2.gender==='M' ? 'Saudara Laki-laki Ayah/Ibu' : 'Saudara Perempuan Ayah/Ibu';
+    hubungan=`👨‍👧 ${p2.name} adalah ${pbLabel} dari ${p1.name}`;
     detail=`Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
   } else if (d1===1&&d2===3) {
-    hubungan=`👨‍👧 ${p1.name} adalah Paman/Bibi Jauh dari ${p2.name}`;
-    detail=`${p2.name} adalah keponakan jauh dari ${p1.name}. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
+    const kkLabel = lcaPerson ? (lcaPerson.gender==='M' ? 'Kakek' : 'Nenek') : 'Kakek/Nenek';
+    hubungan=`👴 ${p1.name} adalah Saudara Kandung ${kkLabel} dari ${p2.name}`;
+    detail=`Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
   } else if (d1===3&&d2===1) {
-    hubungan=`👨‍👧 ${p2.name} adalah Paman/Bibi Jauh dari ${p1.name}`;
-    detail=`${p1.name} adalah keponakan jauh dari ${p2.name}. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
+    const kkLabel = lcaPerson ? (lcaPerson.gender==='M' ? 'Kakek' : 'Nenek') : 'Kakek/Nenek';
+    hubungan=`👴 ${p2.name} adalah Saudara Kandung ${kkLabel} dari ${p1.name}`;
+    detail=`Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
   } else if (d1===2&&d2===2) {
     hubungan=`👫 Sepupu`;
     detail=`${p1.name} dan ${p2.name} adalah sepupu — cucunya ${lcaPerson?lcaPerson.name:'leluhur bersama'}.`;
