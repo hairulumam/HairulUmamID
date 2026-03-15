@@ -507,6 +507,7 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
 .detail-lbl { min-width:96px; color:var(--ink4); flex-shrink:0; font-size:0.78rem; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; padding-top:1px; }
 .detail-val { color:var(--ink2); line-height:1.5; }
 #d-spouse, #d-children { font-weight:700; color:var(--ink); }
+#d-spouse, #d-children { font-weight:700; color:var(--ink); }
 .modal-divider { border:none; border-top:1px solid var(--border2); margin:18px 0; }
 .modal-actions { display:flex; gap:8px; flex-wrap:wrap; }
 
@@ -1823,12 +1824,18 @@ function openDetail(id) {
     // Orang ini adalah pasangan (spouseOf) — dia istri/suami dari kepala keluarga
     const label = p.gender==='F' ? 'Suami' : 'Istri';
     document.getElementById('d-spouse-lbl').textContent = label;
-    document.getElementById('d-spouse').textContent = spouseOf.name;
+    document.getElementById('d-spouse').innerHTML = `<span class="detail-name-link" data-pid="${spouseOf.id}" style="cursor:pointer;font-weight:700;color:var(--ink);text-decoration:underline;text-decoration-color:rgba(184,134,11,0.4)">${spouseOf.name}</span>`;
+    document.getElementById('d-spouse').querySelector('.detail-name-link').addEventListener('click',()=>{ closeDetail(); openDetail(spouseOf.id); });
   } else if (spouses.length > 0) {
     // Orang ini kepala keluarga — punya istri/suami
     const label = p.gender==='M' ? 'Istri' : 'Suami';
     document.getElementById('d-spouse-lbl').textContent = label;
-    document.getElementById('d-spouse').textContent = spouses.map(s=>s.name).join(', ');
+    document.getElementById('d-spouse').innerHTML = spouses.map(s=>
+      `<span class="detail-name-link" data-pid="${s.id}" style="cursor:pointer;font-weight:700;color:var(--ink);text-decoration:underline;text-decoration-color:rgba(184,134,11,0.4)">${s.name}</span>`
+    ).join(', ');
+    document.getElementById('d-spouse').querySelectorAll('.detail-name-link').forEach(el=>{
+      el.addEventListener('click',()=>{ closeDetail(); openDetail(el.dataset.pid); });
+    });
   } else {
     document.getElementById('d-spouse-lbl').textContent = 'Pasangan';
     document.getElementById('d-spouse').textContent = '—';
@@ -1836,7 +1843,17 @@ function openDetail(id) {
   const ownSps=persons.filter(s=>s.spouseOf===id);
   const children=persons.filter(c=>[p,...ownSps].some(ap=>ap.id===c.parentId));
   children.sort((a,b)=>{ const ao=a.order!=null?a.order:9999,bo=b.order!=null?b.order:9999; if(ao!==bo)return ao-bo; return persons.indexOf(a)-persons.indexOf(b); });
-  document.getElementById('d-children').textContent=children.length ? children.map((c,i)=>`${i+1}. ${c.name}`).join(', ') : '—';
+  const childrenEl = document.getElementById('d-children');
+  if (children.length) {
+    childrenEl.innerHTML = children.map((c,i)=>
+      `${i+1}. <span class="detail-name-link" data-pid="${c.id}" style="cursor:pointer;font-weight:700;color:var(--ink);text-decoration:underline;text-decoration-color:rgba(184,134,11,0.4)">${c.name}</span>`
+    ).join(', ');
+    childrenEl.querySelectorAll('.detail-name-link').forEach(el=>{
+      el.addEventListener('click',()=>{ closeDetail(); openDetail(el.dataset.pid); });
+    });
+  } else {
+    childrenEl.textContent = '—';
+  }
   // chain
   const chain=buildChain(id), chainEl=document.getElementById('d-chain'); chainEl.innerHTML='';
   chain.forEach((item,i)=>{
