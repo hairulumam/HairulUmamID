@@ -923,40 +923,13 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
       <div class="login-subtitle">Pohon Keturunan &amp; Nasab Keluarga</div>
     </div>
     <div class="login-body">
-      <div class="role-tabs">
-        <button class="role-tab active" id="tab-viewer" onclick="switchTab('viewer')">
-          <span class="tab-icon">👁️</span> Lihat Saja
-        </button>
-        <button class="role-tab" id="tab-admin" onclick="switchTab('admin')">
-          <span class="tab-icon">🔐</span> Administrator
-        </button>
+      <div class="login-hint">
+        <strong>Silsilah Keluarga</strong> — lihat pohon silsilah, cari nasab bin/binti.
       </div>
-
-      <div id="viewer-section">
-        <div class="login-hint">
-          <strong>Mode Viewer</strong> — lihat pohon silsilah, cari nasab bin/binti, tanpa bisa mengubah data.
-        </div>
-        <button class="login-btn" onclick="enterViewer()">👁️ Lihat Silsilah</button>
-      </div>
-
-      <div id="admin-section" style="display:none">
-        <div class="login-hint">
-          <strong>Mode Admin</strong> — akses penuh untuk tambah, edit, hapus anggota, dan import/export Excel.
-        </div>
-        <div class="form-group-l">
-          <label class="form-label-l">Username</label>
-          <input class="form-input-l" id="l-user" value="admin" placeholder="Username">
-        </div>
-        <div class="form-group-l">
-          <label class="form-label-l">Password</label>
-          <input class="form-input-l" id="l-pass" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()">
-        </div>
-        <div class="login-err" id="login-err">Username atau password salah.</div>
-        <button class="login-btn" onclick="doLogin()">🔓 Masuk sebagai Admin</button>
-      </div>
+      <button class="login-btn" onclick="enterViewer()">👁️ Lihat Silsilah</button>
     </div>
     <div class="login-footer">
-      Sistem Silsilah Keluarga &bull; Hanya admin yang dapat mengubah data
+      Sistem Silsilah Keluarga KH. M Ramli
     </div>
   </div>
 </div>
@@ -1333,33 +1306,7 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
 // ════════════════════════════════════
 // AUTH
 // ════════════════════════════════════
-const ADMIN_USER = 'admin';
-const ADMIN_PASS = 'ramli2024';  // ← ganti password di sini
-
-let currentRole = null; // 'admin' | 'viewer'
-let activeTab = 'viewer';
-
-function switchTab(tab) {
-  activeTab = tab;
-  document.getElementById('tab-admin').classList.toggle('active', tab==='admin');
-  document.getElementById('tab-viewer').classList.toggle('active', tab==='viewer');
-  document.getElementById('admin-section').style.display = tab==='admin' ? 'block' : 'none';
-  document.getElementById('viewer-section').style.display = tab==='viewer' ? 'block' : 'none';
-}
-
-function doLogin() {
-  const u = document.getElementById('l-user').value.trim();
-  const p = document.getElementById('l-pass').value;
-  const err = document.getElementById('login-err');
-  if (u === ADMIN_USER && p === ADMIN_PASS) {
-    err.classList.remove('show');
-    enterApp('admin');
-  } else {
-    err.classList.add('show');
-    document.getElementById('l-pass').value = '';
-    document.getElementById('l-pass').focus();
-  }
-}
+let currentRole = 'viewer';
 
 function enterViewer() { enterApp('viewer'); }
 
@@ -1403,15 +1350,11 @@ function applyRoleUI() {
 }
 
 function doLogout() {
-  currentRole = null;
   filterGen = 'all'; filterGender = null;
   const appEl = document.getElementById('app');
   appEl.classList.remove('app-visible');
   appEl.classList.add('app-hidden');
   document.getElementById('login-screen').style.display = 'flex';
-  document.getElementById('l-pass').value = '';
-  document.getElementById('login-err').classList.remove('show');
-  // clear search
   document.getElementById('search').value = '';
   document.getElementById('search-dropdown').classList.remove('open');
 }
