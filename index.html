@@ -54,125 +54,147 @@ body {
 #login-screen {
   display: flex;
   position: fixed; inset: 0; z-index: 9999;
-  background: linear-gradient(145deg, #0d2218 0%, #1a3a30 50%, #0a1c12 100%);
+  background: linear-gradient(145deg, #0a1c12 0%, #1a3a30 40%, #0d2218 70%, #091508 100%);
   align-items: center; justify-content: center;
   flex-direction: column;
   gap: 0;
+  overflow: hidden;
+}
+
+/* Animated background orbs */
+#login-screen::after {
+  content: '';
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 20%, rgba(184,134,11,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 50% at 80% 80%, rgba(26,92,82,0.15) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 60% 10%, rgba(212,160,23,0.05) 0%, transparent 50%);
+  animation: bgPulse 8s ease-in-out infinite alternate;
+}
+
+@keyframes bgPulse {
+  from { opacity: 0.6; transform: scale(1); }
+  to   { opacity: 1;   transform: scale(1.05); }
 }
 
 .login-bg-pattern {
   position: absolute; inset: 0; pointer-events: none; overflow: hidden;
 }
+
+/* Islamic geometric pattern */
 .login-bg-pattern::before {
   content: '';
   position: absolute; inset: -50%;
   background-image:
-    repeating-linear-gradient(45deg, rgba(212,160,23,0.04) 0px, rgba(212,160,23,0.04) 1px, transparent 1px, transparent 60px),
-    repeating-linear-gradient(-45deg, rgba(212,160,23,0.04) 0px, rgba(212,160,23,0.04) 1px, transparent 1px, transparent 60px);
+    repeating-linear-gradient(0deg, rgba(212,160,23,0.03) 0px, rgba(212,160,23,0.03) 1px, transparent 1px, transparent 40px),
+    repeating-linear-gradient(90deg, rgba(212,160,23,0.03) 0px, rgba(212,160,23,0.03) 1px, transparent 1px, transparent 40px),
+    repeating-linear-gradient(45deg, rgba(212,160,23,0.025) 0px, rgba(212,160,23,0.025) 1px, transparent 1px, transparent 56px),
+    repeating-linear-gradient(-45deg, rgba(212,160,23,0.025) 0px, rgba(212,160,23,0.025) 1px, transparent 1px, transparent 56px);
+  animation: patternDrift 30s linear infinite;
+}
+
+.login-bg-pattern::after {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: radial-gradient(circle at 50% 50%, rgba(212,160,23,0.04) 2px, transparent 2px);
+  background-size: 40px 40px;
+  animation: patternDrift 20s linear infinite reverse;
+}
+
+@keyframes patternDrift {
+  from { transform: translate(0, 0); }
+  to   { transform: translate(40px, 40px); }
 }
 
 .login-card {
   background: #fff;
-  border-radius: 16px;
+  border-radius: 20px;
   width: 380px;
   max-width: 95vw;
-  box-shadow: 0 32px 80px rgba(0,0,0,0.4), 0 0 0 1px rgba(212,160,23,0.15);
+  box-shadow: 
+    0 40px 100px rgba(0,0,0,0.5), 
+    0 0 0 1px rgba(212,160,23,0.2),
+    0 0 60px rgba(184,134,11,0.1);
   overflow: hidden;
   position: relative;
-  animation: loginFadeIn 0.4s ease;
+  animation: loginEntry 0.7s cubic-bezier(0.34,1.56,0.64,1);
 }
 
-@keyframes loginFadeIn {
-  from { opacity:0; transform: translateY(20px); }
-  to   { opacity:1; transform: translateY(0); }
+@keyframes loginEntry {
+  from { opacity:0; transform: translateY(40px) scale(0.92); }
+  to   { opacity:1; transform: translateY(0) scale(1); }
 }
 
 .login-header {
-  background: linear-gradient(135deg, #1a3a30, #1e4a3e);
-  padding: 32px 28px 28px;
+  background: linear-gradient(135deg, #0f2820 0%, #1a3a30 50%, #1e4a3e 100%);
+  padding: 36px 28px 30px;
   text-align: center;
-  border-bottom: 3px solid var(--gold2);
+  border-bottom: 2px solid rgba(212,160,23,0.4);
   position: relative;
+  overflow: hidden;
 }
+
+/* Shimmer effect on header */
+.login-header::before {
+  content: '';
+  position: absolute; top: 0; left: -100%; width: 60%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(212,160,23,0.06), transparent);
+  animation: shimmer 4s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%   { left: -100%; }
+  50%  { left: 150%; }
+  100% { left: 150%; }
+}
+
 .login-ornament {
-  font-size: 2.4rem; color: var(--gold3); line-height: 1; margin-bottom: 12px;
-  filter: drop-shadow(0 0 12px rgba(212,160,23,0.5));
+  font-size: 2.8rem; color: var(--gold3); line-height: 1; margin-bottom: 14px;
+  filter: drop-shadow(0 0 20px rgba(212,160,23,0.7));
   display: block;
+  animation: ornamentGlow 3s ease-in-out infinite alternate;
 }
+
+@keyframes ornamentGlow {
+  from { filter: drop-shadow(0 0 12px rgba(212,160,23,0.5)); transform: scale(1); }
+  to   { filter: drop-shadow(0 0 28px rgba(212,160,23,0.9)); transform: scale(1.05); }
+}
+
 .login-title {
-  font-family: 'Lora', serif; font-size: 1.3rem; font-weight: 700;
+  font-family: 'Lora', serif; font-size: 1.4rem; font-weight: 700;
   color: #f5e6c0; line-height: 1.3;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.3);
 }
 .login-subtitle {
-  font-size: 0.72rem; color: rgba(212,160,23,0.75);
-  letter-spacing: 2.5px; text-transform: uppercase; margin-top: 6px;
+  font-size: 0.72rem; color: rgba(212,160,23,0.8);
+  letter-spacing: 3px; text-transform: uppercase; margin-top: 8px;
 }
 
 .login-body { padding: 28px 28px 24px; }
 
-.role-tabs {
-  display: grid; grid-template-columns: 1fr 1fr;
-  gap: 0; border: 1.5px solid var(--border); border-radius: 8px;
-  overflow: hidden; margin-bottom: 22px;
-}
-.role-tab {
-  padding: 10px; text-align: center; cursor: pointer;
-  font-size: 0.85rem; font-weight: 500; transition: all 0.2s;
-  color: var(--ink4); background: var(--parch2);
-  border: none; outline: none;
-  display: flex; align-items: center; justify-content: center; gap: 6px;
-}
-.role-tab:first-child { border-right: 1.5px solid var(--border); }
-.role-tab.active { background: var(--teal); color: #fff; }
-.role-tab .tab-icon { font-size: 1rem; }
-
 .login-hint {
   background: var(--gold-bg); border: 1px solid var(--gold-light);
-  border-radius: 6px; padding: 10px 14px; margin-bottom: 18px;
+  border-radius: 8px; padding: 12px 14px; margin-bottom: 18px;
   font-size: 0.78rem; color: var(--gold); line-height: 1.6;
 }
 .login-hint strong { color: var(--gold2); }
 
-.form-group-l { margin-bottom: 14px; }
-.form-label-l {
-  display: block; font-size: 0.72rem; font-weight: 600;
-  text-transform: uppercase; letter-spacing: 1px;
-  color: var(--ink4); margin-bottom: 6px;
-}
-.form-input-l {
-  width: 100%; padding: 10px 14px;
-  border: 1.5px solid var(--border); border-radius: 7px;
-  font-family: 'Source Sans 3', sans-serif; font-size: 0.92rem;
-  color: var(--ink); background: var(--parch2); outline: none;
-  transition: all 0.2s;
-}
-.form-input-l:focus { border-color: var(--teal2); background: #fff; box-shadow: 0 0 0 3px rgba(45,122,110,0.1); }
-
-.login-err {
-  font-size: 0.8rem; color: #c0392b;
-  background: #fdf0f0; border: 1px solid #f5c6c6;
-  border-radius: 5px; padding: 8px 12px; margin-bottom: 14px;
-  display: none;
-}
-.login-err.show { display: block; }
-
 .login-btn {
-  width: 100%; padding: 11px;
-  background: var(--teal); border: none; border-radius: 7px;
+  width: 100%; padding: 13px;
+  background: linear-gradient(135deg, var(--teal), var(--teal2));
+  border: none; border-radius: 10px;
   color: #fff; font-family: 'Source Sans 3', sans-serif;
   font-size: 0.95rem; font-weight: 600; cursor: pointer;
-  transition: all 0.2s; letter-spacing: 0.5px;
+  transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 15px rgba(26,92,82,0.35);
 }
-.login-btn:hover { background: var(--teal2); }
-.login-btn:active { transform: scale(0.98); }
-
-.login-viewer-btn {
-  width: 100%; padding: 11px; margin-top: 10px;
-  background: transparent; border: 1.5px solid var(--border); border-radius: 7px;
-  color: var(--ink3); font-family: 'Source Sans 3', sans-serif;
-  font-size: 0.9rem; cursor: pointer; transition: all 0.2s;
+.login-btn:hover { 
+  background: linear-gradient(135deg, var(--teal2), #3a9a8a);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(26,92,82,0.45);
 }
-.login-viewer-btn:hover { border-color: var(--teal2); color: var(--teal); background: var(--teal-light); }
+.login-btn:active { transform: scale(0.97) translateY(0); }
 
 .login-footer {
   padding: 14px 28px 20px;
@@ -412,29 +434,42 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
   width:22px; height:22px; border-radius:50%;
   display:flex; align-items:center; justify-content:center;
   font-size:0.65rem; font-weight:700; flex-shrink:0; cursor:help;
+  transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s ease;
 }
+.marry-ring:hover { transform: scale(1.2); }
 .marry-ring.first { background:var(--gold2); color:#fff; box-shadow:0 2px 8px rgba(184,134,11,0.3); }
+.marry-ring.first:hover { box-shadow:0 4px 14px rgba(184,134,11,0.5); }
 .marry-ring.second { background:#fff; border:2px solid var(--gold2); color:var(--gold2); }
 .marry-ring.third { background:#fff; border:2px dashed var(--gold); color:var(--gold); opacity:0.85; }
 
 .pcard {
-  width:var(--card-w); border-radius:8px; padding:10px 8px 9px;
+  width:var(--card-w); border-radius:10px; padding:10px 8px 9px;
   border:1.5px solid; cursor:pointer;
-  transition:transform 0.18s, box-shadow 0.18s;
+  transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.25s ease, border-color 0.2s ease;
   position:relative; flex-shrink:0; background:#fff;
+  will-change: transform;
 }
-.pcard:hover { transform:translateY(-4px); box-shadow:0 12px 32px var(--shadow),0 4px 12px var(--shadow2); z-index:10; }
+.pcard:hover { 
+  transform:translateY(-6px) scale(1.03); 
+  box-shadow:0 16px 40px var(--shadow), 0 6px 16px var(--shadow2), 0 0 0 1.5px rgba(184,134,11,0.2); 
+  z-index:10; 
+}
 .pcard.M { border-color:#9ecec8; background:linear-gradient(145deg,#fff 0%,var(--teal-light) 100%); }
+.pcard.M:hover { border-color:#5ab5ab; }
 .pcard.F { border-color:#e4b8c8; background:linear-gradient(145deg,#fff 0%,var(--rose-light) 100%); }
+.pcard.F:hover { border-color:#c97a9a; }
 .pcard.highlight { box-shadow:0 0 0 3px var(--gold2),0 8px 28px rgba(184,134,11,0.3)!important; transform:translateY(-5px); }
 .pcard-icon {
   width:36px; height:36px; border-radius:50%; margin:0 auto 7px;
   display:flex; align-items:center; justify-content:center;
   font-size:0.8rem; font-weight:700; font-family:'Lora',serif;
+  transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
 }
+.pcard:hover .pcard-icon { transform: scale(1.12); }
 .pcard.M .pcard-icon { background:var(--teal-light); color:var(--teal); border:2px solid #b0d8d2; }
 .pcard.F .pcard-icon { background:var(--rose-light); color:var(--rose); border:2px solid #e0b8c4; }
-.pcard-name { font-family:'Lora',serif; font-size:0.68rem; font-weight:600; color:var(--ink2); text-align:center; line-height:1.35; }
+.pcard-name { font-family:'Lora',serif; font-size:0.68rem; font-weight:600; color:var(--ink2); text-align:center; line-height:1.35; transition: color 0.2s; }
+.pcard:hover .pcard-name { color: var(--ink); }
 .pcard-tag { font-size:0.55rem; text-align:center; margin-top:5px; padding:2px 7px; border-radius:20px; background:rgba(184,134,11,0.12); color:var(--gold); font-weight:500; }
 
 /* ═══════════════ MODALS ═══════════════ */
@@ -927,6 +962,7 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
         <strong>Silsilah Keluarga</strong> — lihat pohon silsilah, cari nasab bin/binti.
       </div>
       <button class="login-btn" onclick="enterViewer()">👁️ Lihat Silsilah</button>
+      <p style="margin-top:14px;font-size:0.75rem;color:#9a8060;text-align:center;line-height:1.6">Data tidak sesuai? Hubungi admin untuk perbaikan.</p>
     </div>
     <div class="login-footer">
       Sistem Silsilah Keluarga KH. M Ramli
@@ -1495,15 +1531,45 @@ function makeCard(p) {
 
 function drawLines() {
   const svg=document.getElementById('lines'), wrap=document.getElementById('canvas-wrap'); svg.innerHTML='';
+
+  // Tambah defs untuk gradient
+  const defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
+  defs.innerHTML = `
+    <linearGradient id="lineGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#b8860b;stop-opacity:0.6"/>
+      <stop offset="100%" style="stop-color:#9a8060;stop-opacity:0.35"/>
+    </linearGradient>
+    <linearGradient id="lineGradDash" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#d4c4a0;stop-opacity:0.5"/>
+      <stop offset="100%" style="stop-color:#d4c4a0;stop-opacity:0.2"/>
+    </linearGradient>
+  `;
+  svg.appendChild(defs);
+
   function pos(el){ const r=el.getBoundingClientRect(),wr=wrap.getBoundingClientRect(); return {cx:(r.left-wr.left+wrap.scrollLeft+r.width/2)/scale,bot:(r.top-wr.top+wrap.scrollTop+r.height)/scale,top:(r.top-wr.top+wrap.scrollTop)/scale}; }
-  function pth(d,color,dash){ const p=document.createElementNS('http://www.w3.org/2000/svg','path'); p.setAttribute('d',d);p.setAttribute('stroke',color||'#9a8060');p.setAttribute('stroke-width','1.5');p.setAttribute('fill','none');if(dash)p.setAttribute('stroke-dasharray','5,3');svg.appendChild(p); }
+  
+  function pth(d, dash) { 
+    const p=document.createElementNS('http://www.w3.org/2000/svg','path'); 
+    p.setAttribute('d',d);
+    p.setAttribute('stroke', dash ? 'url(#lineGradDash)' : 'url(#lineGrad)');
+    p.setAttribute('stroke-width', dash ? '1.2' : '1.8');
+    p.setAttribute('fill','none');
+    p.setAttribute('stroke-linecap','round');
+    if(dash) p.setAttribute('stroke-dasharray','5,4');
+    svg.appendChild(p); 
+  }
+
   persons.filter(p=>!p.spouseOf).forEach(head=>{
     const hc=document.getElementById('card-'+head.id); if(!hc) return;
     [head,...persons.filter(s=>s.spouseOf===head.id)].forEach((parent,idx)=>{
       const children=persons.filter(c=>c.parentId===parent.id); if(!children.length) return;
       const pc=document.getElementById('card-'+parent.id); if(!pc) return;
-      const pp=pos(pc),midY=pp.bot+26,dash=idx>0,color=dash?'#d4c4a0':'#9a8060';
-      children.forEach(child=>{ const cc=document.getElementById('card-'+child.id); if(!cc) return; const cp=pos(cc); pth(`M ${pp.cx} ${pp.bot} C ${pp.cx} ${midY} ${cp.cx} ${midY} ${cp.cx} ${cp.top}`,color,dash); });
+      const pp=pos(pc), midY=pp.bot+30, dash=idx>0;
+      children.forEach(child=>{ 
+        const cc=document.getElementById('card-'+child.id); if(!cc) return; 
+        const cp=pos(cc); 
+        pth(`M ${pp.cx} ${pp.bot} C ${pp.cx} ${midY} ${cp.cx} ${midY} ${cp.cx} ${cp.top}`, dash); 
+      });
     });
   });
 }
