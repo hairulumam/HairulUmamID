@@ -2454,11 +2454,14 @@ function cekKerabat() {
   }
 
   // P2 adalah pasangan dari seseorang — cek hubungan orang itu dengan P1
-  // Cek semua pasangan P2: baik p2.spouseOf maupun yang spouseOf===p2.id
+  // Hanya cek ipar kalau P2 tidak punya parentId sendiri di silsilah darah
+  // (kalau punya parentId, berarti dia keturunan asli → cek jalur darah dulu)
   let iparHubungan = null;
   const pasanganListP2 = [];
-  if (p2.spouseOf) pasanganListP2.push(persons.find(x=>x.id===p2.spouseOf));
-  persons.filter(x=>x.spouseOf===id2).forEach(x=>pasanganListP2.push(x));
+  if (!p2.parentId) {
+    if (p2.spouseOf) pasanganListP2.push(persons.find(x=>x.id===p2.spouseOf));
+    persons.filter(x=>x.spouseOf===id2).forEach(x=>pasanganListP2.push(x));
+  }
 
   for (const pasanganP2 of pasanganListP2.filter(Boolean)) {
     const ancP = getAncestors(pasanganP2.id);
@@ -2479,8 +2482,10 @@ function cekKerabat() {
   // P1 adalah pasangan dari seseorang — cek hubungan orang itu dengan P2
   if (!iparHubungan) {
     const pasanganListP1 = [];
-    if (p1.spouseOf) pasanganListP1.push(persons.find(x=>x.id===p1.spouseOf));
-    persons.filter(x=>x.spouseOf===id1).forEach(x=>pasanganListP1.push(x));
+    if (!p1.parentId) {
+      if (p1.spouseOf) pasanganListP1.push(persons.find(x=>x.id===p1.spouseOf));
+      persons.filter(x=>x.spouseOf===id1).forEach(x=>pasanganListP1.push(x));
+    }
 
     for (const pasanganP1 of pasanganListP1.filter(Boolean)) {
       const ancP = getAncestors(pasanganP1.id);
@@ -2659,7 +2664,34 @@ function cekKerabat() {
     detail=`${p2.name} adalah sepupu dari nenek/kakek ${p1.name}. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
   } else {
     hubungan=`🔗 Hubungan Kerabat`;
-    detail=`${p1.name} dan ${p2.name} masih berhubungan darah namun jauh. Jarak dari leluhur bersama (${lcaPerson?lcaPerson.name:'-'}): ${p1.name} = ${d1} generasi, ${p2.name} = ${d2} generasi.`;
+    // Cari nama leluhur d-1 dari pihak yang lebih jauh untuk keterangan deskriptif
+    const minD = Math.min(d1, d2);
+    const maxD = Math.max(d1, d2);
+    const pJauh = d1 > d2 ? p1 : p2;
+    const pDekat = d1 > d2 ? p2 : p1;
+    // Cari siapa leluhur pJauh di level minD (setara dengan pDekat)
+    let namaSetara = null;
+    const ancJauh = d1 > d2 ? anc1 : anc2;
+    const ancDekat = d1 > d2 ? anc2 : anc1;
+    // Cari person di jalur pJauh yang jaraknya = minD dari leluhur bersama
+    // yaitu orang tua/kakek pJauh yang levelnya sama dengan pDekat
+    for (const aid in ancJauh) {
+      if (ancJauh[aid] === maxD - minD) {
+        // cek apakah ini di jalur yang menuju lcaPerson
+        const candidate = persons.find(x=>x.id===aid);
+        if (candidate && aid !== id1 && aid !== id2) {
+          namaSetara = candidate;
+          break;
+        }
+      }
+    }
+    if (namaSetara && minD === 3 && maxD === 4) {
+      detail=`${pJauh.name} adalah anak dari ${namaSetara.name} yang merupakan Sepupu Dua Kali ${pDekat.name}.`;
+    } else if (namaSetara && minD === 2 && maxD === 4) {
+      detail=`${pJauh.name} adalah cucu dari ${namaSetara.name} yang merupakan Sepupu ${pDekat.name}.`;
+    } else {
+      detail=`${p1.name} dan ${p2.name} masih berhubungan darah. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}.`;
+    }
   }
   document.getElementById('kr-hubungan').textContent=hubungan;
   document.getElementById('kr-detail').textContent=detail;
