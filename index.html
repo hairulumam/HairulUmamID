@@ -2409,6 +2409,156 @@ function cekKerabat() {
   }
   const anc1 = getAncestors(id1);
   const anc2 = getAncestors(id2);
+
+  // ── Cek mertua/menantu ──
+  // Cek apakah p1 adalah orang tua dari pasangan p2
+  const spouseOfP2 = p2.spouseOf ? persons.find(x=>x.id===p2.spouseOf) : null;
+  const spousesOfP2Head = spouseOfP2 ? [] : persons.filter(x=>x.spouseOf===id2);
+  // Semua pasangan p2 (baik p2 sebagai kepala atau sebagai istri)
+  const p2Partners = spouseOfP2 ? [spouseOfP2] : spousesOfP2Head;
+  const isMertuaP1 = p2Partners.some(sp => sp.parentId === id1 || persons.filter(w=>w.spouseOf===id1).some(w=>w.id===sp.parentId));
+
+  const spouseOfP1 = p1.spouseOf ? persons.find(x=>x.id===p1.spouseOf) : null;
+  const p1Partners = spouseOfP1 ? [spouseOfP1] : persons.filter(x=>x.spouseOf===id1);
+  const isMertuaP2 = p1Partners.some(sp => sp.parentId === id2 || persons.filter(w=>w.spouseOf===id2).some(w=>w.id===sp.parentId));
+
+  if (isMertuaP1 || isMertuaP2) {
+    resultEl.style.display = 'block';
+    let hub = '', det = '';
+    if (isMertuaP1) {
+      const mertuaLabel = p1.gender==='M' ? 'Mertua (Bapak)' : 'Mertua (Ibu)';
+      const menantulabel = p2.gender==='M' ? 'Menantu Laki-laki' : 'Menantu Perempuan';
+      hub = `👨‍👩‍👧 ${p1.name} adalah ${mertuaLabel} dari ${p2.name}`;
+      det = `${p2.name} adalah ${menantulabel} dari ${p1.name}.`;
+    } else {
+      const mertuaLabel = p2.gender==='M' ? 'Mertua (Bapak)' : 'Mertua (Ibu)';
+      const menantulabel = p1.gender==='M' ? 'Menantu Laki-laki' : 'Menantu Perempuan';
+      hub = `👨‍👩‍👧 ${p2.name} adalah ${mertuaLabel} dari ${p1.name}`;
+      det = `${p1.name} adalah ${menantulabel} dari ${p2.name}.`;
+    }
+    document.getElementById('kr-hubungan').textContent = hub;
+    document.getElementById('kr-detail').textContent = det;
+    document.getElementById('kr-jalur').textContent = '';
+    return;
+  }
+  // ── Cek ipar — P2 adalah pasangan dari kerabat P1 (atau sebaliknya) ──
+  function getIstilahDasar(da, db, lcaP) {
+    if (da===1&&db===1) return 'Saudara Kandung';
+    if (da===2&&db===2) return 'Sepupu';
+    return null; // hanya cover saudara kandung dan sepupu
+  }
+
+  // P2 adalah pasangan dari seseorang — cek hubungan orang itu dengan P1
+  let iparHubungan = null;
+  if (p2.spouseOf) {
+    const pasanganP2 = persons.find(x=>x.id===p2.spouseOf);
+    if (pasanganP2) {
+      const ancP = getAncestors(pasanganP2.id);
+      let lcaI=null, di1=999, di2=999;
+      for (const aid in anc1) {
+        if (ancP[aid]!==undefined && anc1[aid]+ancP[aid]<di1+di2) { lcaI=aid; di1=anc1[aid]; di2=ancP[aid]; }
+      }
+      if (lcaI) {
+        const dasar = getIstilahDasar(di1, di2);
+        if (dasar) {
+          const iparLabel = p2.gender==='M' ? 'Ipar Laki-laki' : 'Ipar Perempuan';
+          iparHubungan = { hub: `🤝 ${p2.name} adalah ${iparLabel} (${dasar}) dari ${p1.name}`, det: `${p2.name} adalah pasangan dari ${pasanganP2.name} yang merupakan ${dasar} ${p1.name}.`, lca: lcaI };
+        }
+      }
+    }
+  }
+  // P1 adalah pasangan dari seseorang — cek hubungan orang itu dengan P2
+  if (!iparHubungan && p1.spouseOf) {
+    const pasanganP1 = persons.find(x=>x.id===p1.spouseOf);
+    if (pasanganP1) {
+      const ancP = getAncestors(pasanganP1.id);
+      let lcaI=null, di1=999, di2=999;
+      for (const aid in anc2) {
+        if (ancP[aid]!==undefined && anc2[aid]+ancP[aid]<di1+di2) { lcaI=aid; di1=anc2[aid]; di2=ancP[aid]; }
+      }
+      if (lcaI) {
+        const dasar = getIstilahDasar(di1, di2);
+        if (dasar) {
+          const iparLabel = p1.gender==='M' ? 'Ipar Laki-laki' : 'Ipar Perempuan';
+          iparHubungan = { hub: `🤝 ${p1.name} adalah ${iparLabel} (${dasar}) dari ${p2.name}`, det: `${p1.name} adalah pasangan dari ${pasanganP1.name} yang merupakan ${dasar} ${p2.name}.`, lca: lcaI };
+        }
+      }
+    }
+  }
+  if (iparHubungan) {
+    resultEl.style.display = 'block';
+    document.getElementById('kr-hubungan').textContent = iparHubungan.hub;
+    document.getElementById('kr-detail').textContent = iparHubungan.det;
+    const lcaP = persons.find(x=>x.id===iparHubungan.lca);
+    document.getElementById('kr-jalur').textContent = lcaP ? `Leluhur bersama: ${lcaP.name} (Gen ${lcaP.gen})` : '';
+    return;
+  }
+
+  // ── Cek Besan — orang tua P1 adalah pasangan dari anak P2 (atau sebaliknya) ──
+  // Anak-anak P1 (termasuk lewat pasangannya)
+  const spousesP1 = persons.filter(x=>x.spouseOf===id1);
+  const childrenP1 = persons.filter(c=> c.parentId===id1 || spousesP1.some(s=>s.id===c.parentId));
+  const besanMatch1 = childrenP1.find(c=> {
+    // c adalah pasangan dari anak P2
+    const spousesP2 = persons.filter(x=>x.spouseOf===id2);
+    const childrenP2 = persons.filter(cc=> cc.parentId===id2 || spousesP2.some(s=>s.id===cc.parentId));
+    return childrenP2.some(cc=> cc.spouseOf===c.id || c.spouseOf===cc.id);
+  });
+
+  const spousesP2b = persons.filter(x=>x.spouseOf===id2);
+  const childrenP2b = persons.filter(c=> c.parentId===id2 || spousesP2b.some(s=>s.id===c.parentId));
+  const besanMatch2 = childrenP2b.find(c=> {
+    return childrenP1.some(cc=> cc.spouseOf===c.id || c.spouseOf===cc.id);
+  });
+
+  if (besanMatch1 || besanMatch2) {
+    resultEl.style.display = 'block';
+    const besanLabel1 = p1.gender==='M' ? 'Besan Laki-laki' : 'Besan Perempuan';
+    const besanLabel2 = p2.gender==='M' ? 'Besan Laki-laki' : 'Besan Perempuan';
+    document.getElementById('kr-hubungan').textContent = `🤝 ${p1.name} dan ${p2.name} adalah Besan`;
+    document.getElementById('kr-detail').textContent = `Anak dari ${p1.name} menikah dengan anak dari ${p2.name}.`;
+    document.getElementById('kr-jalur').textContent = '';
+    return;
+  }
+
+  // ── Cek Saudara Ipar — P2 adalah saudara kandung dari pasangan P1 ──
+  let saudaraIpar = null;
+  // Pasangan-pasangan P1
+  const allSpousesP1 = p1.spouseOf
+    ? [persons.find(x=>x.id===p1.spouseOf)].filter(Boolean)
+    : persons.filter(x=>x.spouseOf===id1);
+  for (const sp of allSpousesP1) {
+    // Cari saudara kandung sp
+    if (!sp.parentId) continue;
+    const saudara = persons.filter(x=> x.parentId===sp.parentId && x.id!==sp.id);
+    if (saudara.some(s=>s.id===id2)) {
+      const label = p2.gender==='M' ? 'Saudara Ipar Laki-laki' : 'Saudara Ipar Perempuan';
+      saudaraIpar = { hub: `🤝 ${p2.name} adalah ${label} dari ${p1.name}`, det: `${p2.name} adalah saudara kandung dari ${sp.name} yang merupakan pasangan ${p1.name}.` };
+      break;
+    }
+  }
+  // Kebalikan — pasangan-pasangan P2
+  if (!saudaraIpar) {
+    const allSpousesP2 = p2.spouseOf
+      ? [persons.find(x=>x.id===p2.spouseOf)].filter(Boolean)
+      : persons.filter(x=>x.spouseOf===id2);
+    for (const sp of allSpousesP2) {
+      if (!sp.parentId) continue;
+      const saudara = persons.filter(x=> x.parentId===sp.parentId && x.id!==sp.id);
+      if (saudara.some(s=>s.id===id1)) {
+        const label = p1.gender==='M' ? 'Saudara Ipar Laki-laki' : 'Saudara Ipar Perempuan';
+        saudaraIpar = { hub: `🤝 ${p1.name} adalah ${label} dari ${p2.name}`, det: `${p1.name} adalah saudara kandung dari ${sp.name} yang merupakan pasangan ${p2.name}.` };
+        break;
+      }
+    }
+  }
+  if (saudaraIpar) {
+    resultEl.style.display = 'block';
+    document.getElementById('kr-hubungan').textContent = saudaraIpar.hub;
+    document.getElementById('kr-detail').textContent = saudaraIpar.det;
+    document.getElementById('kr-jalur').textContent = '';
+    return;
+  }
   let lca = null, d1 = 999, d2 = 999;
   for (const aid in anc1) {
     if (anc2[aid] !== undefined && anc1[aid]+anc2[aid] < d1+d2) {
@@ -2443,7 +2593,7 @@ function cekKerabat() {
     hubungan=`🌳 ${p1.name} adalah Buyut dari ${p2.name}`;
     detail='';
   } else if (d1===0 && d2>3) {
-    hubungan=`🌳 ${p1.name} adalah Leluhur Jauh dari ${p2.name}`;
+    hubungan=`🌳 ${p1.name} adalah Leluhur dari ${p2.name}`;
     detail=`Jarak ${d2} generasi ke bawah. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
   } else if (d2===0 && d1===1) {
     hubungan=`👨‍👧 ${p2.name} adalah ${ortu2} dari ${p1.name}`;
@@ -2455,17 +2605,17 @@ function cekKerabat() {
     hubungan=`🌳 ${p2.name} adalah Buyut dari ${p1.name}`;
     detail='';
   } else if (d2===0 && d1>3) {
-    hubungan=`🌳 ${p2.name} adalah Leluhur Jauh dari ${p1.name}`;
+    hubungan=`🌳 ${p2.name} adalah Leluhur dari ${p1.name}`;
     detail=`Jarak ${d1} generasi ke bawah. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
   } else if (d1===1&&d2===1) {
     hubungan=`👫 Saudara Kandung`;
     detail=`${p1.name} dan ${p2.name} adalah saudara kandung — anak dari ${lcaPerson?lcaPerson.name:'orang tua yang sama'}.`;
   } else if (d1===1&&d2===2) {
-    const pbLabel = p1.gender==='M' ? 'Saudara Laki-laki Ayah/Ibu' : 'Saudara Perempuan Ayah/Ibu';
+    const pbLabel = p1.gender==='M' ? 'Paman' : 'Bibi';
     hubungan=`👨‍👧 ${p1.name} adalah ${pbLabel} dari ${p2.name}`;
     detail=`Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
   } else if (d1===2&&d2===1) {
-    const pbLabel = p2.gender==='M' ? 'Saudara Laki-laki Ayah/Ibu' : 'Saudara Perempuan Ayah/Ibu';
+    const pbLabel = p2.gender==='M' ? 'Paman' : 'Bibi';
     hubungan=`👨‍👧 ${p2.name} adalah ${pbLabel} dari ${p1.name}`;
     detail=`Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
   } else if (d1===1&&d2===3) {
@@ -2495,7 +2645,7 @@ function cekKerabat() {
     hubungan=`🔗 Keponakan Sepupu (tingkat 2)`;
     detail=`${p2.name} adalah sepupu dari nenek/kakek ${p1.name}. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
   } else {
-    hubungan=`🔗 Kerabat Jauh`;
+    hubungan=`🔗 Hubungan Kerabat`;
     detail=`${p1.name} dan ${p2.name} masih berhubungan darah namun jauh. Jarak dari leluhur bersama (${lcaPerson?lcaPerson.name:'-'}): ${p1.name} = ${d1} generasi, ${p2.name} = ${d2} generasi.`;
   }
   document.getElementById('kr-hubungan').textContent=hubungan;
