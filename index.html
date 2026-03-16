@@ -2445,7 +2445,8 @@ function cekKerabat() {
   function getIstilahDasar(da, db, lcaP) {
     if (da===1&&db===1) return 'Saudara Kandung';
     if (da===2&&db===2) return 'Sepupu';
-    return null; // hanya cover saudara kandung dan sepupu
+    if (da===3&&db===3) return 'Sepupu Dua Kali';
+    return null;
   }
 
   // P2 adalah pasangan dari seseorang — cek hubungan orang itu dengan P1
