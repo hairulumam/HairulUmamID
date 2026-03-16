@@ -1438,6 +1438,10 @@ function loadSample() {
 // ════════════════════════════════════
 // BIN/BINTI
 // ════════════════════════════════════
+function normalizeName(str) {
+  return str.toLowerCase().replace(/\./g, '').replace(/\s+/g, ' ').trim();
+}
+
 function getNasabShort(id) {
   const chain = buildChain(id);
   if (chain.length <= 1) return '';
@@ -1744,14 +1748,14 @@ searchInput.addEventListener('focus', () => {
 });
 
 searchInput.addEventListener('input',()=>{
-  const q=searchInput.value.trim().toLowerCase(); chainPanel.classList.remove('open');
+  const q=normalizeName(searchInput.value); chainPanel.classList.remove('open');
   if(!q){ showRecentInSearch(); return; }
-  const allHits=persons.filter(p=>p.name.toLowerCase().includes(q));
+  const allHits=persons.filter(p=>normalizeName(p.name).includes(normalizeName(q)));
   // Deduplikasi: nama sama + salah satu hanya punya spouseOf → buang yang spouseOf saja
   allHits.sort((a,b)=>(b.gen||0)-(a.gen||0)); // generasi terbaru duluan
   const dedupHits = [];
   allHits.forEach(p=>{
-    const sameName = dedupHits.filter(x=>x.name.trim().toLowerCase()===p.name.trim().toLowerCase());
+    const sameName = dedupHits.filter(x=>normalizeName(x.name)===normalizeName(p.name));
     if(sameName.length===0){
       dedupHits.push(p);
     } else {
@@ -1999,7 +2003,7 @@ function renderParentList(query) {
   const list = document.getElementById('parent-list');
   const selectedId = document.getElementById('f-parent').value;
   list.innerHTML = '';
-  const q = query.trim().toLowerCase();
+  const q = normalizeName(query);
   
   // Group by gen
   const maxGen = _parentData.length ? Math.max(..._parentData.map(x=>x.gen)) : 0;
@@ -2007,7 +2011,7 @@ function renderParentList(query) {
   
   for (let g = maxGen; g >= 1; g--) {
     let group = _parentData.filter(x => x.gen === g);
-    if (q) group = group.filter(x => x.name.toLowerCase().includes(q));
+    if (q) group = group.filter(x => normalizeName(x.name).includes(normalizeName(q)));
     if (!group.length) continue;
     
     const lbl = document.createElement('div');
@@ -2292,7 +2296,7 @@ function krSearch(num, q) {
   const drop = document.getElementById('kr-drop-'+num);
   if (!q || q.length < 1) { drop.style.display='none'; return; }
   // Filter gen>0 saja, exclude pasangan (spouseOf) jika ada versi parentId-nya
-  const allHits = persons.filter(p => p.gen > 0 && p.name.toLowerCase().includes(q.toLowerCase())).sort((a,b) => b.gen - a.gen);
+  const allHits = persons.filter(p => p.gen > 0 && normalizeName(p.name).includes(normalizeName(q))).sort((a,b) => b.gen - a.gen);
   // Dedup: kalau ada nama sama, prioritaskan yang punya parentId
   const dedup = [];
   allHits.forEach(p => {
@@ -2450,28 +2454,35 @@ function cekKerabat() {
   }
 
   // P2 adalah pasangan dari seseorang — cek hubungan orang itu dengan P1
+  // Cek semua pasangan P2: baik p2.spouseOf maupun yang spouseOf===p2.id
   let iparHubungan = null;
-  if (p2.spouseOf) {
-    const pasanganP2 = persons.find(x=>x.id===p2.spouseOf);
-    if (pasanganP2) {
-      const ancP = getAncestors(pasanganP2.id);
-      let lcaI=null, di1=999, di2=999;
-      for (const aid in anc1) {
-        if (ancP[aid]!==undefined && anc1[aid]+ancP[aid]<di1+di2) { lcaI=aid; di1=anc1[aid]; di2=ancP[aid]; }
-      }
-      if (lcaI) {
-        const dasar = getIstilahDasar(di1, di2);
-        if (dasar) {
-          const iparLabel = p2.gender==='M' ? 'Ipar Laki-laki' : 'Ipar Perempuan';
-          iparHubungan = { hub: `🤝 ${p2.name} adalah ${iparLabel} (${dasar}) dari ${p1.name}`, det: `${p2.name} adalah pasangan dari ${pasanganP2.name} yang merupakan ${dasar} ${p1.name}.`, lca: lcaI };
-        }
+  const pasanganListP2 = [];
+  if (p2.spouseOf) pasanganListP2.push(persons.find(x=>x.id===p2.spouseOf));
+  persons.filter(x=>x.spouseOf===id2).forEach(x=>pasanganListP2.push(x));
+
+  for (const pasanganP2 of pasanganListP2.filter(Boolean)) {
+    const ancP = getAncestors(pasanganP2.id);
+    let lcaI=null, di1=999, di2=999;
+    for (const aid in anc1) {
+      if (ancP[aid]!==undefined && anc1[aid]+ancP[aid]<di1+di2) { lcaI=aid; di1=anc1[aid]; di2=ancP[aid]; }
+    }
+    if (lcaI) {
+      const dasar = getIstilahDasar(di1, di2);
+      if (dasar) {
+        const iparLabel = p2.gender==='M' ? 'Ipar Laki-laki' : 'Ipar Perempuan';
+        iparHubungan = { hub: `🤝 ${p2.name} adalah ${iparLabel} (${dasar}) dari ${p1.name}`, det: `${p2.name} adalah pasangan dari ${pasanganP2.name} yang merupakan ${dasar} ${p1.name}.`, lca: lcaI };
+        break;
       }
     }
   }
+
   // P1 adalah pasangan dari seseorang — cek hubungan orang itu dengan P2
-  if (!iparHubungan && p1.spouseOf) {
-    const pasanganP1 = persons.find(x=>x.id===p1.spouseOf);
-    if (pasanganP1) {
+  if (!iparHubungan) {
+    const pasanganListP1 = [];
+    if (p1.spouseOf) pasanganListP1.push(persons.find(x=>x.id===p1.spouseOf));
+    persons.filter(x=>x.spouseOf===id1).forEach(x=>pasanganListP1.push(x));
+
+    for (const pasanganP1 of pasanganListP1.filter(Boolean)) {
       const ancP = getAncestors(pasanganP1.id);
       let lcaI=null, di1=999, di2=999;
       for (const aid in anc2) {
@@ -2482,6 +2493,7 @@ function cekKerabat() {
         if (dasar) {
           const iparLabel = p1.gender==='M' ? 'Ipar Laki-laki' : 'Ipar Perempuan';
           iparHubungan = { hub: `🤝 ${p1.name} adalah ${iparLabel} (${dasar}) dari ${p2.name}`, det: `${p1.name} adalah pasangan dari ${pasanganP1.name} yang merupakan ${dasar} ${p2.name}.`, lca: lcaI };
+          break;
         }
       }
     }
@@ -2758,15 +2770,15 @@ function showMobileRecent() {
 }
 
 document.getElementById('mobile-search-inp').addEventListener('input', function() {
-  const q = this.value.trim().toLowerCase();
+  const q = normalizeName(this.value);
   const list = document.getElementById('mobile-sq-list');
   list.innerHTML = '';
   if (!q) { showMobileRecent(); return; }
-  const allHitsM=persons.filter(p=>p.name.toLowerCase().includes(q));
+  const allHitsM=persons.filter(p=>normalizeName(p.name).includes(normalizeName(q)));
   allHitsM.sort((a,b)=>(b.gen||0)-(a.gen||0));
   const dedupM=[];
   allHitsM.forEach(p=>{
-    const same=dedupM.filter(x=>x.name.trim().toLowerCase()===p.name.trim().toLowerCase());
+    const same=dedupM.filter(x=>normalizeName(x.name)===normalizeName(p.name));
     if(!same.length){ dedupM.push(p); }
     else {
       same.forEach(ex=>{ if(p.parentId&&!ex.parentId&&ex.spouseOf){ const i=dedupM.indexOf(ex); dedupM.splice(i,1,p); } });
