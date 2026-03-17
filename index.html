@@ -2684,90 +2684,49 @@ function cekKerabat() {
     hubungan=`👫 Saudara Kandung`;
     detail=`${p1.name} dan ${p2.name} adalah saudara kandung — keduanya anak dari ${lcaPerson?lcaPerson.name:'orang tua yang sama'}.`;
   } else if (d1===1&&d2===2) {
-    // Cari orang tua P2 di jalur menuju LCA
-    let ortuP2 = null;
-    for (const aid in anc2) {
-      if (anc2[aid] === 1 && aid !== id2 && aid !== lca) {
-        const cand = persons.find(x=>x.id===aid);
-        if (cand) { ortuP2 = cand; break; }
-      }
-    }
+    const ortuP2 = p2.parentId ? persons.find(x=>x.id===p2.parentId) : null;
     const pbLabel = p1.gender==='M' ? 'Paman' : 'Bibi';
     const ortuLabel = ortuP2 ? (ortuP2.gender==='M' ? 'Ayah' : 'Ibu') : 'orang tua';
     hubungan=`👨‍👧 ${p1.name} adalah ${pbLabel} dari ${p2.name}`;
     detail=`${p1.name} saudara kandung dengan ${ortuLabel} ${p2.name}${ortuP2?' ('+ortuP2.name+')':''}. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
   } else if (d1===2&&d2===1) {
-    let ortuP1 = null;
-    for (const aid in anc1) {
-      if (anc1[aid] === 1 && aid !== id1 && aid !== lca) {
-        const cand = persons.find(x=>x.id===aid);
-        if (cand) { ortuP1 = cand; break; }
-      }
-    }
+    const ortuP1 = p1.parentId ? persons.find(x=>x.id===p1.parentId) : null;
     const pbLabel = p2.gender==='M' ? 'Paman' : 'Bibi';
     const ortuLabel = ortuP1 ? (ortuP1.gender==='M' ? 'Ayah' : 'Ibu') : 'orang tua';
     hubungan=`👨‍👧 ${p2.name} adalah ${pbLabel} dari ${p1.name}`;
     detail=`${p2.name} saudara kandung dengan ${ortuLabel} ${p1.name}${ortuP1?' ('+ortuP1.name+')':''}. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
   } else if (d1===1&&d2===3) {
-    // Cari kakek/nenek P2 (d=2 di jalur P2)
-    let kkP2 = null;
-    for (const aid in anc2) {
-      if (anc2[aid] === 2 && aid !== id2 && aid !== lca) {
-        const cand = persons.find(x=>x.id===aid);
-        if (cand) { kkP2 = cand; break; }
-      }
-    }
+    const ortuP2 = p2.parentId ? persons.find(x=>x.id===p2.parentId) : null;
+    const kkP2 = ortuP2?.parentId ? persons.find(x=>x.id===ortuP2.parentId) : null;
     const kkLabel = kkP2 ? (kkP2.gender==='M' ? 'Kakek' : 'Nenek') : 'Kakek/Nenek';
     hubungan=`👴 ${p1.name} adalah Saudara Kandung ${kkLabel} dari ${p2.name}`;
     detail=`${p1.name} saudara kandung dengan ${kkLabel} ${p2.name}${kkP2?' ('+kkP2.name+')':''}. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
   } else if (d1===3&&d2===1) {
-    let kkP1 = null;
-    for (const aid in anc1) {
-      if (anc1[aid] === 2 && aid !== id1 && aid !== lca) {
-        const cand = persons.find(x=>x.id===aid);
-        if (cand) { kkP1 = cand; break; }
-      }
-    }
+    const ortuP1 = p1.parentId ? persons.find(x=>x.id===p1.parentId) : null;
+    const kkP1 = ortuP1?.parentId ? persons.find(x=>x.id===ortuP1.parentId) : null;
     const kkLabel = kkP1 ? (kkP1.gender==='M' ? 'Kakek' : 'Nenek') : 'Kakek/Nenek';
     hubungan=`👴 ${p2.name} adalah Saudara Kandung ${kkLabel} dari ${p1.name}`;
     detail=`${p2.name} saudara kandung dengan ${kkLabel} ${p1.name}${kkP1?' ('+kkP1.name+')':''}. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
   } else if (d1===2&&d2===2) {
-    // Cari orang tua P1 dan P2
-    let ortuP1 = null, ortuP2 = null;
-    for (const aid in anc1) {
-      if (anc1[aid] === 1 && aid !== id1 && aid !== lca) { ortuP1 = persons.find(x=>x.id===aid); break; }
-    }
-    for (const aid in anc2) {
-      if (anc2[aid] === 1 && aid !== id2 && aid !== lca) { ortuP2 = persons.find(x=>x.id===aid); break; }
-    }
+    const ortuP1 = p1.parentId ? persons.find(x=>x.id===p1.parentId) : null;
+    const ortuP2 = p2.parentId ? persons.find(x=>x.id===p2.parentId) : null;
     hubungan=`👫 Sepupu`;
     detail=`${p1.name} dan ${p2.name} adalah Sepupu karena orang tua mereka saudara kandung${ortuP1&&ortuP2?' — '+ortuP1.name+' dan '+ortuP2.name:''}. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
   } else if (d1===2&&d2===3) {
-    // Cari orang tua P2 (d=2 di jalur P2 = setara dengan P1)
-    let ortuP2 = null;
-    for (const aid in anc2) {
-      if (anc2[aid] === 2 && aid !== id2 && aid !== lca) { ortuP2 = persons.find(x=>x.id===aid); break; }
-    }
+    const ortuP2 = p2.parentId ? persons.find(x=>x.id===p2.parentId) : null;
     const ortuLabel = ortuP2 ? (ortuP2.gender==='M' ? 'Ayah' : 'Ibu') : 'orang tua';
     hubungan=`👫 Keponakan Sepupu`;
     detail=`${p1.name} adalah Sepupu dari ${ortuLabel} ${p2.name}${ortuP2?' ('+ortuP2.name+')':''}. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
   } else if (d1===3&&d2===2) {
-    let ortuP1 = null;
-    for (const aid in anc1) {
-      if (anc1[aid] === 2 && aid !== id1 && aid !== lca) { ortuP1 = persons.find(x=>x.id===aid); break; }
-    }
+    const ortuP1 = p1.parentId ? persons.find(x=>x.id===p1.parentId) : null;
     const ortuLabel = ortuP1 ? (ortuP1.gender==='M' ? 'Ayah' : 'Ibu') : 'orang tua';
     hubungan=`👫 Keponakan Sepupu`;
     detail=`${p2.name} adalah Sepupu dari ${ortuLabel} ${p1.name}${ortuP1?' ('+ortuP1.name+')':''}. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
   } else if (d1===3&&d2===3) {
-    // Cari kakek/nenek P1 dan P2
-    let kkP1 = null, kkP2 = null;
-    for (const aid in anc1) {
-      if (anc1[aid] === 2 && aid !== id1 && aid !== lca) { kkP1 = persons.find(x=>x.id===aid); break; }
-    }
-    for (const aid in anc2) {
-      if (anc2[aid] === 2 && aid !== id2 && aid !== lca) { kkP2 = persons.find(x=>x.id===aid); break; }
-    }
+    const ortuP1 = p1.parentId ? persons.find(x=>x.id===p1.parentId) : null;
+    const ortuP2 = p2.parentId ? persons.find(x=>x.id===p2.parentId) : null;
+    const kkP1 = ortuP1?.parentId ? persons.find(x=>x.id===ortuP1.parentId) : null;
+    const kkP2 = ortuP2?.parentId ? persons.find(x=>x.id===ortuP2.parentId) : null;
     const kkLabel1 = kkP1 ? (kkP1.gender==='M' ? 'Kakek' : 'Nenek') : 'Kakek/Nenek';
     const kkLabel2 = kkP2 ? (kkP2.gender==='M' ? 'Kakek' : 'Nenek') : 'Kakek/Nenek';
     hubungan=`👫 Sepupu Dua Kali`;
