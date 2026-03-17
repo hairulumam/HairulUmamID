@@ -536,8 +536,8 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
   border-radius:6px; padding:14px 16px; margin-bottom:18px;
 }
 .ncb-label { font-size:0.65rem; letter-spacing:2px; text-transform:uppercase; color:var(--gold); font-weight:700; margin-bottom:10px; }
-.ncb-steps { display:flex; flex-direction:row; align-items:center; gap:0; flex-wrap:wrap; }
-.ncb-row { display:flex; align-items:center; gap:6px; flex-shrink:0; }
+.ncb-steps { display:flex; flex-direction:column; gap:6px; }
+.ncb-row { display:flex; align-items:center; gap:8px; }
 .ncb-badge {
   width:22px; height:22px; border-radius:50%; flex-shrink:0;
   display:flex; align-items:center; justify-content:center;
@@ -875,7 +875,7 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
   .ncb-badge.self { background: #b8860b !important; color: #fff !important; }
   .ncb-name { color: #3d2e14 !important; }
   .ncb-connector { color: #9a8060 !important; padding: 0 4px !important; }
-  .ncb-steps { flex-direction: row !important; flex-wrap: wrap !important; }
+  .ncb-steps { flex-direction: column !important; flex-wrap: nowrap !important; }
 
   /* detail grid */
   .detail-lbl { color: #9a8060 !important; }
@@ -1135,17 +1135,26 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
       <div class="kerabat-title">Cek Hubungan Kekerabatan</div>
       <button onclick="closeKerabat()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;border-radius:8px;padding:4px 10px;cursor:pointer;font-size:1rem">✕</button>
     </div>
-    <div class="kerabat-body">
+      <div class="kerabat-body">
+      <!-- Histori pencarian terakhir -->
+      <div id="kr-history" style="display:none;margin-bottom:10px;padding:8px 12px;background:var(--gold-bg);border:1px solid var(--gold-light);border-radius:8px;font-size:0.78rem;color:var(--gold2)">
+        <div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;color:var(--gold)">🕐 Terakhir dicek</div>
+        <div id="kr-history-list" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+      </div>
       <div class="kerabat-row">
         <div style="flex:1;position:relative">
-          <input class="form-input" id="kr-input-1" placeholder="🔍 Nama pertama..." autocomplete="off" oninput="krSearch(1,this.value)" onfocus="krSearch(1,this.value)">
+          <input class="form-input" id="kr-input-1" placeholder="🔍 Nama pertama..." autocomplete="off" 
+            oninput="krSearch(1,this.value)"
+            onfocus="if(!document.getElementById('kr-id-1').value)krSearch(1,this.value)">
           <div id="kr-drop-1" style="display:none;position:absolute;z-index:999;width:100%;max-height:min(260px,40vh);overflow-y:auto;background:#fff;border:1.5px solid #d4c4a0;border-top:none;border-radius:0 0 8px 8px;box-shadow:0 8px 24px rgba(0,0,0,0.12);-webkit-overflow-scrolling:touch;touch-action:pan-y"></div>
         </div>
         <input type="hidden" id="kr-id-1">
       </div>
       <div class="kerabat-row">
         <div style="flex:1;position:relative">
-          <input class="form-input" id="kr-input-2" placeholder="🔍 Nama kedua..." autocomplete="off" oninput="krSearch(2,this.value)" onfocus="krSearch(2,this.value)">
+          <input class="form-input" id="kr-input-2" placeholder="🔍 Nama kedua..." autocomplete="off" 
+            oninput="krSearch(2,this.value)"
+            onfocus="if(!document.getElementById('kr-id-2').value)krSearch(2,this.value)">
           <div id="kr-drop-2" style="display:none;position:absolute;z-index:999;width:100%;max-height:min(260px,40vh);overflow-y:auto;background:#fff;border:1.5px solid #d4c4a0;border-top:none;border-radius:0 0 8px 8px;box-shadow:0 8px 24px rgba(0,0,0,0.12);-webkit-overflow-scrolling:touch;touch-action:pan-y"></div>
         </div>
         <input type="hidden" id="kr-id-2">
@@ -1689,7 +1698,7 @@ function updateStats() {
 
 function updateGenNav(maxGen) {
   const nav=document.getElementById('gen-nav-list'); nav.innerHTML='';
-  for(let g=1;g<=maxGen;g++){
+  for(let g=maxGen;g>=1;g--){
     const item=document.createElement('div'); item.className='gen-nav-item'; item.dataset.gen=g;
     item.innerHTML=`<div class="gen-dot"></div>Generasi ${g}<span class="gen-count">${persons.filter(p=>p.gen===g).length} orang</span>`;
     item.addEventListener('click',()=>{ document.querySelectorAll('.gen-nav-item').forEach(i=>i.classList.remove('active')); item.classList.add('active'); document.querySelector(`.gen-row[data-gen="${g}"]`)?.scrollIntoView({behavior:'smooth',block:'center'}); });
@@ -1923,7 +1932,7 @@ function openDetail(id) {
     nameEl.title='Klik untuk lihat detail';
     nameEl.addEventListener('click',()=>{ closeDetail(); openDetail(item.person.id); });
     row.appendChild(badge); row.appendChild(nameEl); chainEl.appendChild(row);
-    if(i<chain.length-2){ const conn=document.createElement('div'); conn.className='ncb-connector'; conn.textContent='→'; chainEl.appendChild(conn); }
+    if(i<chain.length-2){ }
   });
   // admin buttons
   document.getElementById('d-edit-btn').onclick=()=>{ closeDetail(); openEditForm(id); };
@@ -2287,6 +2296,41 @@ async function clearAllData() {
 // ══════════════════════════════════════
 // FITUR CEK KEKERABATAN
 // ══════════════════════════════════════
+const KR_HISTORY_KEY = 'silsilah_kr_history';
+function getKrHistory() { try { return JSON.parse(localStorage.getItem(KR_HISTORY_KEY))||[]; } catch { return []; } }
+function saveKrHistory(id1, id2) {
+  const p1 = persons.find(x=>x.id===id1), p2 = persons.find(x=>x.id===id2);
+  if (!p1||!p2) return;
+  let hist = getKrHistory().filter(h=>!(h.id1===id1&&h.id2===id2));
+  hist.unshift({id1,id2,n1:p1.name,n2:p2.name});
+  if(hist.length>1) hist=hist.slice(0,1);
+  try { localStorage.setItem(KR_HISTORY_KEY, JSON.stringify(hist)); } catch {}
+}
+function renderKrHistory() {
+  const hist = getKrHistory();
+  const box = document.getElementById('kr-history');
+  const list = document.getElementById('kr-history-list');
+  if (!hist.length) { box.style.display='none'; return; }
+  box.style.display='block'; list.innerHTML='';
+  hist.forEach(h=>{
+    const btn = document.createElement('button');
+    btn.style.cssText='padding:4px 10px;border-radius:12px;border:1px solid var(--gold-light);background:#fff;cursor:pointer;font-size:0.75rem;color:var(--ink3);transition:all 0.15s;font-family:inherit';
+    btn.textContent=`${h.n1} × ${h.n2}`;
+    btn.onmouseover=()=>btn.style.background='var(--gold-bg)';
+    btn.onmouseout=()=>btn.style.background='#fff';
+    btn.onclick=()=>{
+      document.getElementById('kr-input-1').value=h.n1;
+      document.getElementById('kr-id-1').value=h.id1;
+      document.getElementById('kr-input-2').value=h.n2;
+      document.getElementById('kr-id-2').value=h.id2;
+      document.getElementById('kr-drop-1').style.display='none';
+      document.getElementById('kr-drop-2').style.display='none';
+      cekKerabat();
+    };
+    list.appendChild(btn);
+  });
+}
+
 function openKerabat() {
   document.getElementById('kerabat-overlay').classList.add('open');
   document.getElementById('kr-input-1').value='';
@@ -2294,6 +2338,7 @@ function openKerabat() {
   document.getElementById('kr-id-1').value='';
   document.getElementById('kr-id-2').value='';
   document.getElementById('kerabat-result').style.display='none';
+  renderKrHistory();
   setTimeout(()=>document.getElementById('kr-input-1').focus(),100);
 }
 function closeKerabat() {
@@ -2592,6 +2637,7 @@ function cekKerabat() {
       lca = aid; d1 = anc1[aid]; d2 = anc2[aid];
     }
   }
+  saveKrHistory(id1, id2);
   resultEl.style.display='block';
   const lcaPerson = lca ? persons.find(x=>x.id===lca) : null;
   if (!lca) {
@@ -2904,7 +2950,7 @@ function buildMobileGenNav() {
   const nav = document.getElementById('m-gen-nav');
   nav.innerHTML = '';
   const maxGen = Math.max(...persons.map(p=>p.gen), 0);
-  for (let g=1; g<=maxGen; g++) {
+  for (let g=maxGen; g>=1; g--) {
     const cnt = persons.filter(p=>p.gen===g).length;
     const btn = document.createElement('button');
     btn.style.cssText = 'width:100%;display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--parch2);border:1px solid var(--border2);border-radius:8px;cursor:pointer;font-family:inherit;font-size:0.85rem;color:var(--ink3);text-align:left;';
