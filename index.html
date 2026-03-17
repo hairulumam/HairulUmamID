@@ -1897,12 +1897,18 @@ function openDetail(id) {
     // Orang ini adalah pasangan (spouseOf) — dia istri/suami dari kepala keluarga
     const label = p.gender==='F' ? 'Suami' : 'Istri';
     document.getElementById('d-spouse-lbl').textContent = label;
-    document.getElementById('d-spouse').innerHTML = `<span style="font-weight:700;color:var(--ink)">${spouseOf.name}</span>`;
+    document.getElementById('d-spouse').innerHTML = `<span class="detail-name-link" data-pid="${spouseOf.id}" style="cursor:pointer;font-weight:700;color:var(--ink);text-decoration:underline;text-decoration-color:rgba(184,134,11,0.4)">${spouseOf.name}</span>`;
+    document.getElementById('d-spouse').querySelectorAll('.detail-name-link').forEach(el=>{
+      el.addEventListener('click',()=>{ closeDetail(); openDetail(el.dataset.pid); });
+    });
   } else if (spouses.length > 0) {
     // Orang ini kepala keluarga — punya istri/suami
     const label = p.gender==='M' ? 'Istri' : 'Suami';
     document.getElementById('d-spouse-lbl').textContent = label;
-    document.getElementById('d-spouse').innerHTML = spouses.map(s=>`<span style="font-weight:700;color:var(--ink)">${s.name}</span>`).join(', ');
+    document.getElementById('d-spouse').innerHTML = spouses.map(s=>`<span class="detail-name-link" data-pid="${s.id}" style="cursor:pointer;font-weight:700;color:var(--ink);text-decoration:underline;text-decoration-color:rgba(184,134,11,0.4)">${s.name}</span>`).join(', ');
+    document.getElementById('d-spouse').querySelectorAll('.detail-name-link').forEach(el=>{
+      el.addEventListener('click',()=>{ closeDetail(); openDetail(el.dataset.pid); });
+    });
   } else {
     document.getElementById('d-spouse-lbl').textContent = 'Pasangan';
     document.getElementById('d-spouse').textContent = '—';
