@@ -2776,6 +2776,32 @@ function cekKerabat() {
     const kkName1 = kkP1 ? kkP1.name : '';
     hubungan=`👨‍👧 ${p1.name} adalah Cucu Sepupu dari ${p2.name}`;
     detail=`${p2.name} adalah sepupu dari ${kkName1 ? kkName1+' ('+kkLabel1+' '+p1.name+')' : kkLabel1+' '+p1.name}. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
+  } else if (d1===3&&d2===5) {
+    // P1 lebih dekat ke LCA (d=3), P2 lebih jauh (d=5) → P2 adalah Cucu Sepupu Dua Kali dari P1
+    // Cari leluhur P2 di level d=3 dari LCA (yaitu Sepupu Dua Kali P1 — nenek/kakek P2)
+    let jembatan = null;
+    for (const aid in anc2) {
+      if (anc2[aid] === 2 && aid !== id2 && aid !== lca) {
+        const cand = persons.find(x=>x.id===aid);
+        if (cand) { jembatan = cand; break; }
+      }
+    }
+    const jembatanLabel = jembatan ? (jembatan.gender==='M' ? 'Kakek' : 'Nenek') : 'Nenek/Kakek';
+    hubungan=`👨‍👧 ${p2.name} adalah Cucu Sepupu Dua Kali dari ${p1.name}`;
+    detail=`${p2.name} adalah cucu dari ${jembatan ? jembatan.name+' ('+jembatanLabel+' dari '+p2.name+')' : jembatanLabel+' '+p2.name} yang merupakan Sepupu Dua Kali ${p1.name}. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
+  } else if (d1===5&&d2===3) {
+    // P2 lebih dekat ke LCA (d=3), P1 lebih jauh (d=5) → P1 adalah Cucu Sepupu Dua Kali dari P2
+    // Cari leluhur P1 di level d=3 dari LCA (yaitu Sepupu Dua Kali P2 — nenek/kakek P1)
+    let jembatan = null;
+    for (const aid in anc1) {
+      if (anc1[aid] === 2 && aid !== id1 && aid !== lca) {
+        const cand = persons.find(x=>x.id===aid);
+        if (cand) { jembatan = cand; break; }
+      }
+    }
+    const jembatanLabel = jembatan ? (jembatan.gender==='M' ? 'Kakek' : 'Nenek') : 'Nenek/Kakek';
+    hubungan=`👨‍👧 ${p1.name} adalah Cucu Sepupu Dua Kali dari ${p2.name}`;
+    detail=`${p1.name} adalah cucu dari ${jembatan ? jembatan.name+' ('+jembatanLabel+' dari '+p1.name+')' : jembatanLabel+' '+p1.name} yang merupakan Sepupu Dua Kali ${p2.name}. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
   } else {
     hubungan=`🔗 Hubungan Kerabat`;
     // Cari nama leluhur d-1 dari pihak yang lebih jauh untuk keterangan deskriptif
