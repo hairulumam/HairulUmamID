@@ -2713,12 +2713,22 @@ function cekKerabat() {
     hubungan=`👫 Sepupu`;
     detail=`${p1.name} dan ${p2.name} adalah Sepupu karena orang tua mereka saudara kandung${ortuP1&&ortuP2?' — '+ortuP1.name+' dan '+ortuP2.name:''}. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
   } else if (d1===2&&d2===3) {
-    const ortuP2 = p2.parentId ? persons.find(x=>x.id===p2.parentId) : null;
+    let ortuP2 = p2.parentId ? persons.find(x=>x.id===p2.parentId) : null;
+    // Kalau ortuP2 adalah kepala keluarga (tidak punya parentId sendiri di nasab),
+    // cek apakah pasangannya yang punya nasab ke LCA
+    if (ortuP2 && !ortuP2.parentId && ortuP2.spouseOf) {
+      const pasangan = persons.find(x=>x.id===ortuP2.spouseOf);
+      if (pasangan && pasangan.parentId) ortuP2 = pasangan;
+    }
     const ortuLabel = ortuP2 ? (ortuP2.gender==='M' ? 'Ayah' : 'Ibu') : 'orang tua';
     hubungan=`👫 Keponakan Sepupu`;
     detail=`${p1.name} adalah Sepupu dari ${ortuLabel} ${p2.name}${ortuP2?' ('+ortuP2.name+')':''}. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
   } else if (d1===3&&d2===2) {
-    const ortuP1 = p1.parentId ? persons.find(x=>x.id===p1.parentId) : null;
+    let ortuP1 = p1.parentId ? persons.find(x=>x.id===p1.parentId) : null;
+    if (ortuP1 && !ortuP1.parentId && ortuP1.spouseOf) {
+      const pasangan = persons.find(x=>x.id===ortuP1.spouseOf);
+      if (pasangan && pasangan.parentId) ortuP1 = pasangan;
+    }
     const ortuLabel = ortuP1 ? (ortuP1.gender==='M' ? 'Ayah' : 'Ibu') : 'orang tua';
     hubungan=`👫 Keponakan Sepupu`;
     detail=`${p2.name} adalah Sepupu dari ${ortuLabel} ${p1.name}${ortuP1?' ('+ortuP1.name+')':''}. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
