@@ -2500,6 +2500,25 @@ function cekKerabat() {
     return;
   }
   // ── Cek ipar — P2 adalah pasangan dari kerabat P1 (atau sebaliknya) ──
+  // Helper: ambil orang tua yang punya nasab (parentId) bukan yang masuk lewat pernikahan
+  function getNasabParent(p) {
+    if (!p || !p.parentId) return null;
+    const par = persons.find(x=>x.id===p.parentId);
+    if (!par) return null;
+    // Kalau par punya parentId sendiri → dia yang punya nasab
+    if (par.parentId) return par;
+    // Kalau par tidak punya parentId tapi spouseOf → cek pasangannya
+    if (par.spouseOf) {
+      const pasangan = persons.find(x=>x.id===par.spouseOf);
+      if (pasangan && pasangan.parentId) return pasangan;
+    }
+    // Kalau par kepala keluarga tapi cek apakah ada istrinya yang punya parentId
+    const istri = persons.filter(x=>x.spouseOf===par.id);
+    const istriNasab = istri.find(x=>x.parentId);
+    if (istriNasab) return istriNasab;
+    return par;
+  }
+
   function getIstilahDasar(da, db, lcaP) {
     if (da===1&&db===1) return 'Saudara Kandung';
     if (da===2&&db===2) return 'Sepupu';
@@ -2684,59 +2703,49 @@ function cekKerabat() {
     hubungan=`👫 Saudara Kandung`;
     detail=`${p1.name} dan ${p2.name} adalah saudara kandung — keduanya anak dari ${lcaPerson?lcaPerson.name:'orang tua yang sama'}.`;
   } else if (d1===1&&d2===2) {
-    const ortuP2 = p2.parentId ? persons.find(x=>x.id===p2.parentId) : null;
+    const ortuP2 = getNasabParent(p2);
     const pbLabel = p1.gender==='M' ? 'Paman' : 'Bibi';
     const ortuLabel = ortuP2 ? (ortuP2.gender==='M' ? 'Ayah' : 'Ibu') : 'orang tua';
     hubungan=`👨‍👧 ${p1.name} adalah ${pbLabel} dari ${p2.name}`;
     detail=`${p1.name} saudara kandung dengan ${ortuLabel} ${p2.name}${ortuP2?' ('+ortuP2.name+')':''}. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
   } else if (d1===2&&d2===1) {
-    const ortuP1 = p1.parentId ? persons.find(x=>x.id===p1.parentId) : null;
+    const ortuP1 = getNasabParent(p1);
     const pbLabel = p2.gender==='M' ? 'Paman' : 'Bibi';
     const ortuLabel = ortuP1 ? (ortuP1.gender==='M' ? 'Ayah' : 'Ibu') : 'orang tua';
     hubungan=`👨‍👧 ${p2.name} adalah ${pbLabel} dari ${p1.name}`;
     detail=`${p2.name} saudara kandung dengan ${ortuLabel} ${p1.name}${ortuP1?' ('+ortuP1.name+')':''}. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
   } else if (d1===1&&d2===3) {
-    const ortuP2 = p2.parentId ? persons.find(x=>x.id===p2.parentId) : null;
-    const kkP2 = ortuP2?.parentId ? persons.find(x=>x.id===ortuP2.parentId) : null;
+    const ortuP2 = getNasabParent(p2);
+    const kkP2 = ortuP2 ? getNasabParent(ortuP2) : null;
     const kkLabel = kkP2 ? (kkP2.gender==='M' ? 'Kakek' : 'Nenek') : 'Kakek/Nenek';
     hubungan=`👴 ${p1.name} adalah Saudara Kandung ${kkLabel} dari ${p2.name}`;
     detail=`${p1.name} saudara kandung dengan ${kkLabel} ${p2.name}${kkP2?' ('+kkP2.name+')':''}. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
   } else if (d1===3&&d2===1) {
-    const ortuP1 = p1.parentId ? persons.find(x=>x.id===p1.parentId) : null;
-    const kkP1 = ortuP1?.parentId ? persons.find(x=>x.id===ortuP1.parentId) : null;
+    const ortuP1 = getNasabParent(p1);
+    const kkP1 = ortuP1 ? getNasabParent(ortuP1) : null;
     const kkLabel = kkP1 ? (kkP1.gender==='M' ? 'Kakek' : 'Nenek') : 'Kakek/Nenek';
     hubungan=`👴 ${p2.name} adalah Saudara Kandung ${kkLabel} dari ${p1.name}`;
     detail=`${p2.name} saudara kandung dengan ${kkLabel} ${p1.name}${kkP1?' ('+kkP1.name+')':''}. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
   } else if (d1===2&&d2===2) {
-    const ortuP1 = p1.parentId ? persons.find(x=>x.id===p1.parentId) : null;
-    const ortuP2 = p2.parentId ? persons.find(x=>x.id===p2.parentId) : null;
+    const ortuP1 = getNasabParent(p1);
+    const ortuP2 = getNasabParent(p2);
     hubungan=`👫 Sepupu`;
     detail=`${p1.name} dan ${p2.name} adalah Sepupu karena orang tua mereka saudara kandung${ortuP1&&ortuP2?' — '+ortuP1.name+' dan '+ortuP2.name:''}. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
   } else if (d1===2&&d2===3) {
-    let ortuP2 = p2.parentId ? persons.find(x=>x.id===p2.parentId) : null;
-    // Kalau ortuP2 adalah kepala keluarga (tidak punya parentId sendiri di nasab),
-    // cek apakah pasangannya yang punya nasab ke LCA
-    if (ortuP2 && !ortuP2.parentId && ortuP2.spouseOf) {
-      const pasangan = persons.find(x=>x.id===ortuP2.spouseOf);
-      if (pasangan && pasangan.parentId) ortuP2 = pasangan;
-    }
+    const ortuP2 = getNasabParent(p2);
     const ortuLabel = ortuP2 ? (ortuP2.gender==='M' ? 'Ayah' : 'Ibu') : 'orang tua';
     hubungan=`👫 Keponakan Sepupu`;
     detail=`${p1.name} adalah Sepupu dari ${ortuLabel} ${p2.name}${ortuP2?' ('+ortuP2.name+')':''}. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
   } else if (d1===3&&d2===2) {
-    let ortuP1 = p1.parentId ? persons.find(x=>x.id===p1.parentId) : null;
-    if (ortuP1 && !ortuP1.parentId && ortuP1.spouseOf) {
-      const pasangan = persons.find(x=>x.id===ortuP1.spouseOf);
-      if (pasangan && pasangan.parentId) ortuP1 = pasangan;
-    }
+    const ortuP1 = getNasabParent(p1);
     const ortuLabel = ortuP1 ? (ortuP1.gender==='M' ? 'Ayah' : 'Ibu') : 'orang tua';
     hubungan=`👫 Keponakan Sepupu`;
     detail=`${p2.name} adalah Sepupu dari ${ortuLabel} ${p1.name}${ortuP1?' ('+ortuP1.name+')':''}. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
   } else if (d1===3&&d2===3) {
-    const ortuP1 = p1.parentId ? persons.find(x=>x.id===p1.parentId) : null;
-    const ortuP2 = p2.parentId ? persons.find(x=>x.id===p2.parentId) : null;
-    const kkP1 = ortuP1?.parentId ? persons.find(x=>x.id===ortuP1.parentId) : null;
-    const kkP2 = ortuP2?.parentId ? persons.find(x=>x.id===ortuP2.parentId) : null;
+    const ortuP1 = getNasabParent(p1);
+    const ortuP2 = getNasabParent(p2);
+    const kkP1 = ortuP1 ? getNasabParent(ortuP1) : null;
+    const kkP2 = ortuP2 ? getNasabParent(ortuP2) : null;
     const kkLabel1 = kkP1 ? (kkP1.gender==='M' ? 'Kakek' : 'Nenek') : 'Kakek/Nenek';
     const kkLabel2 = kkP2 ? (kkP2.gender==='M' ? 'Kakek' : 'Nenek') : 'Kakek/Nenek';
     hubungan=`👫 Sepupu Dua Kali`;
