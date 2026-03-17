@@ -2712,11 +2712,31 @@ function cekKerabat() {
     hubungan=`👫 Sepupu Dua Kali`;
     detail=`${p1.name} dan ${p2.name} adalah sepupu dua kali — cicitnya ${lcaPerson?lcaPerson.name:'leluhur bersama'}.`;
   } else if (d1===2&&d2===4) {
-    hubungan=`🔗 Keponakan Sepupu (tingkat 2)`;
-    detail=`${p1.name} adalah sepupu dari nenek/kakek ${p2.name}. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
+    // P1 lebih dekat ke LCA (d=2), P2 lebih jauh (d=4) → P2 adalah Cucu Sepupu dari P1
+    let kkP2 = null;
+    for (const aid in anc2) {
+      if (anc2[aid] === 2 && aid !== id2 && aid !== lca) {
+        const cand = persons.find(x=>x.id===aid);
+        if (cand) { kkP2 = cand; break; }
+      }
+    }
+    const kkLabel2 = kkP2 ? (kkP2.gender==='M' ? 'Kakek' : 'Nenek') : 'Nenek/Kakek';
+    const kkName2 = kkP2 ? kkP2.name : '';
+    hubungan=`👨‍👧 ${p2.name} adalah Cucu Sepupu dari ${p1.name}`;
+    detail=`${p1.name} adalah sepupu dari ${kkName2 ? kkName2+' ('+kkLabel2+' '+p2.name+')' : kkLabel2+' '+p2.name}. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
   } else if (d1===4&&d2===2) {
-    hubungan=`🔗 Keponakan Sepupu (tingkat 2)`;
-    detail=`${p2.name} adalah sepupu dari nenek/kakek ${p1.name}. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
+    // P2 lebih dekat ke LCA (d=2), P1 lebih jauh (d=4) → P1 adalah Cucu Sepupu dari P2
+    let kkP1 = null;
+    for (const aid in anc1) {
+      if (anc1[aid] === 2 && aid !== id1 && aid !== lca) {
+        const cand = persons.find(x=>x.id===aid);
+        if (cand) { kkP1 = cand; break; }
+      }
+    }
+    const kkLabel1 = kkP1 ? (kkP1.gender==='M' ? 'Kakek' : 'Nenek') : 'Nenek/Kakek';
+    const kkName1 = kkP1 ? kkP1.name : '';
+    hubungan=`👨‍👧 ${p1.name} adalah Cucu Sepupu dari ${p2.name}`;
+    detail=`${p2.name} adalah sepupu dari ${kkName1 ? kkName1+' ('+kkLabel1+' '+p1.name+')' : kkLabel1+' '+p1.name}. Leluhur bersama: ${lcaPerson?lcaPerson.name:'-'}`;
   } else {
     hubungan=`🔗 Hubungan Kerabat`;
     // Cari nama leluhur d-1 dari pihak yang lebih jauh untuk keterangan deskriptif
