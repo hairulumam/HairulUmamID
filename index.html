@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Silsilah KH. M Ramli</title>
+<title>Silsilah KH. Abdul Aziz (Buju Ombe')</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600&display=swap');
@@ -355,7 +355,7 @@ body {
   border-right:1px solid var(--border2); border-bottom:1px solid var(--border2);
 }
 .stat-cell:nth-child(even) { border-right:none; }
-.stat-cell:nth-child(3),.stat-cell:nth-child(4) { border-bottom:none; }
+.stat-cell:nth-child(5),.stat-cell:nth-child(6) { border-bottom:none; }
 .stat-num { font-family:'Lora',serif; font-size:1.8rem; font-weight:700; color:var(--gold2); line-height:1; }
 .stat-lbl { font-size:0.68rem; color:var(--ink4); margin-top:3px; text-transform:uppercase; letter-spacing:0.5px; }
 .legend-list { padding:10px 16px 12px; }
@@ -458,7 +458,9 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
 .pcard.M:hover { border-color:#5ab5ab; }
 .pcard.F { border-color:#e4b8c8; background:linear-gradient(145deg,#fff 0%,var(--rose-light) 100%); }
 .pcard.F:hover { border-color:#c97a9a; }
-.pcard.highlight { box-shadow:0 0 0 3px var(--gold2),0 8px 28px rgba(184,134,11,0.3)!important; transform:translateY(-5px); }
+.pcard.wafat { opacity: 0.45; filter: grayscale(0.6); }
+.pcard.wafat .pcard-name { color: var(--ink4); }
+
 .pcard-icon {
   width:36px; height:36px; border-radius:50%; margin:0 auto 7px;
   display:flex; align-items:center; justify-content:center;
@@ -954,7 +956,7 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
   <div class="login-card">
     <div class="login-header">
       <span class="login-ornament">☽</span>
-      <div class="login-title">Silsilah KH. M Ramli</div>
+      <div class="login-title">Silsilah KH. Abdul Aziz (Buju Ombe')</div>
       <div class="login-subtitle">Pohon Keturunan &amp; Nasab Keluarga</div>
     </div>
     <div class="login-body">
@@ -962,10 +964,23 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
         <strong>Silsilah Keluarga</strong> — lihat pohon silsilah, cari nasab bin/binti.
       </div>
       <button class="login-btn" onclick="enterViewer()">👁️ Lihat Silsilah</button>
+      <button class="login-btn" onclick="" style="margin-top:10px;background:linear-gradient(135deg,#5a3e1b,#7a5530);box-shadow:0 4px 15px rgba(90,62,27,0.35);">📖 Sejarah KH. Abdul Aziz</button>
+      
+      <!-- Admin login -->
+      <div id="admin-form" style="display:none;margin-top:14px;border-top:1px solid var(--border2);padding-top:14px">
+        <div style="position:relative;margin-bottom:8px">
+          <input type="password" id="admin-pass-input" class="form-input" placeholder="🔑 Masukkan password admin…"
+            style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:0.9rem;background:var(--parch2);color:var(--ink);outline:none;"
+            onkeydown="if(event.key==='Enter')doAdminLogin()">
+        </div>
+        <button class="login-btn" onclick="doAdminLogin()" style="background:linear-gradient(135deg,#1a3a30,#1e4a3e);">🔐 Masuk sebagai Admin</button>
+        <p id="admin-err" style="display:none;margin-top:8px;font-size:0.75rem;color:#c0392b;text-align:center">❌ Password salah!</p>
+      </div>
+      <button id="admin-toggle-btn" onclick="toggleAdminForm()" style="margin-top:12px;background:none;border:none;color:var(--ink4);font-size:0.75rem;cursor:pointer;font-family:inherit;text-decoration:underline;">🔐 Login Admin</button>
       <p style="margin-top:14px;font-size:0.75rem;color:#9a8060;text-align:center;line-height:1.6">Data tidak sesuai? Hubungi admin untuk perbaikan.</p>
     </div>
     <div class="login-footer">
-      Sistem Silsilah Keluarga KH. M Ramli
+      Sistem Silsilah Keluarga KH. Abdul Aziz (Buju Ombe')
     </div>
   </div>
 </div>
@@ -980,7 +995,7 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
   <div class="header-top">
     <div class="header-ornament">☽</div>
     <div class="header-titles">
-      <div class="header-main">Silsilah KH. M Ramli</div>
+      <div class="header-main">Silsilah KH. Abdul Aziz (Buju Ombe')</div>
       <div class="header-sub">Pohon Keturunan &amp; Nasab Keluarga</div>
     </div>
     <div class="header-divider"></div>
@@ -1052,8 +1067,15 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
           <div class="stat-num" id="st-female" style="color:var(--rose)">0</div>
           <div class="stat-lbl">Perempuan ♀</div>
         </div>
+        <div class="stat-cell" style="cursor:default;border-bottom:none">
+          <div class="stat-num" id="st-hidup" style="color:#2d7a6e">0</div>
+          <div class="stat-lbl">🟢 Hidup</div>
+        </div>
+        <div class="stat-cell" style="cursor:default;border-bottom:none;border-right:none">
+          <div class="stat-num" id="st-wafat" style="color:#888">0</div>
+          <div class="stat-lbl">🕊️ Wafat</div>
+        </div>
       </div>
-      <!-- active filter info -->
       <div id="filter-info" style="display:none;padding:6px 14px 8px;font-size:0.72rem;color:var(--teal);background:var(--teal-light);border-top:1px solid #b0d8d2;display:flex;align-items:center;gap:6px;">
         <span id="filter-info-text"></span>
         <button onclick="setGenFilter('all');setGenderFilter(null)" style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--teal);font-size:0.8rem;font-weight:700;" title="Hapus filter">✕</button>
@@ -1107,6 +1129,7 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
     <div class="modal-body">
       <div class="detail-grid">
         <div class="detail-row"><div class="detail-lbl">Generasi</div><div class="detail-val" id="d-gen"></div></div>
+        <div class="detail-row"><div class="detail-lbl">Status</div><div class="detail-val" id="d-status"></div></div>
         <div class="detail-row"><div class="detail-lbl" id="d-spouse-lbl">Pasangan</div><div class="detail-val" id="d-spouse"></div></div>
         <div class="detail-row"><div class="detail-lbl">Anak-anak</div><div class="detail-val" id="d-children"></div></div>
         <div class="detail-row"><div class="detail-lbl">Catatan</div><div class="detail-val" id="d-note"></div></div>
@@ -1121,6 +1144,7 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
         <button class="btn btn-gold admin-only" id="d-edit-btn">✎ Edit</button>
         <button class="btn btn-danger admin-only" id="d-del-btn">✕ Hapus</button>
         <button class="btn btn-teal-ghost admin-only" id="d-add-child-btn">＋ Tambah Anak</button>
+        <button class="btn admin-only" id="d-wafat-btn" style="background:transparent;border-color:#aaa;color:#666;">🕊️ Tandai Wafat</button>
         <button class="btn btn-ghost" onclick="closeDetail()">Tutup</button>
       </div>
     </div>
@@ -1323,6 +1347,14 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
         <div style="font-family:'Lora',serif;font-size:2rem;font-weight:700;color:var(--rose);line-height:1" id="m-st-female">0</div>
         <div style="font-size:0.7rem;color:var(--rose);margin-top:4px;text-transform:uppercase;letter-spacing:0.5px">Perempuan ♀</div>
       </div>
+      <div style="background:#f0faf8;border-radius:10px;padding:14px;text-align:center;border:1px solid #b0d8d2">
+        <div style="font-family:'Lora',serif;font-size:2rem;font-weight:700;color:#2d7a6e;line-height:1" id="m-st-hidup">0</div>
+        <div style="font-size:0.7rem;color:#2d7a6e;margin-top:4px;text-transform:uppercase;letter-spacing:0.5px">🟢 Hidup</div>
+      </div>
+      <div style="background:#f5f5f5;border-radius:10px;padding:14px;text-align:center;border:1px solid #ddd">
+        <div style="font-family:'Lora',serif;font-size:2rem;font-weight:700;color:#888;line-height:1" id="m-st-wafat">0</div>
+        <div style="font-size:0.7rem;color:#888;margin-top:4px;text-transform:uppercase;letter-spacing:0.5px">🕊️ Wafat</div>
+      </div>
     </div>
     <!-- gen nav -->
     <div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--ink4);margin-bottom:8px">Lompat ke Generasi</div>
@@ -1352,6 +1384,30 @@ svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-e
 // AUTH
 // ════════════════════════════════════
 let currentRole = 'viewer';
+
+const ADMIN_PASS = 'ramli2024';
+
+function toggleAdminForm() {
+  const form = document.getElementById('admin-form');
+  const btn = document.getElementById('admin-toggle-btn');
+  const isOpen = form.style.display !== 'none';
+  form.style.display = isOpen ? 'none' : 'block';
+  btn.textContent = isOpen ? '🔐 Login Admin' : '✕ Tutup';
+  if (!isOpen) setTimeout(()=>document.getElementById('admin-pass-input').focus(), 100);
+}
+
+function doAdminLogin() {
+  const val = document.getElementById('admin-pass-input').value;
+  const err = document.getElementById('admin-err');
+  if (val === ADMIN_PASS) {
+    err.style.display = 'none';
+    document.getElementById('admin-pass-input').value = '';
+    enterApp('admin');
+  } else {
+    err.style.display = 'block';
+    document.getElementById('admin-pass-input').select();
+  }
+}
 
 function enterViewer() { enterApp('viewer'); }
 
@@ -1530,7 +1586,7 @@ function makeCluster(head) {
 }
 
 function makeCard(p) {
-  const c=document.createElement('div'); c.className=`pcard ${p.gender}`; c.id='card-'+p.id;
+  const c=document.createElement('div'); c.className=`pcard ${p.gender}${p.wafat?' wafat':''}`; c.id='card-'+p.id;
   const ini=p.name.replace(/^(KH\.|H\.|Hj\.|Nyai|Ny\.)\s*/i,'').split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase().substring(0,2);
   const spouseLabel = p.wifeOrder > 1 ? (p.gender==='F'?`Istri ke-${p.wifeOrder}`:`Suami ke-${p.wifeOrder}`) : '';
   c.innerHTML=`<div class="pcard-icon">${ini}</div><div class="pcard-name">${p.name}</div>${spouseLabel?`<div class="pcard-tag">${spouseLabel}</div>`:''}${p.note?`<div class="pcard-tag">${p.note.substring(0,22)}${p.note.length>22?'…':''}</div>`:''}`;
@@ -1688,6 +1744,12 @@ function updateStats() {
   const femaleCount = filtered.filter(p=>p.gender==='F').length;
   document.getElementById('st-male').textContent = maleCount;
   document.getElementById('st-female').textContent = femaleCount;
+
+  // hidup / wafat — ikut filter generasi & gender
+  const hidupCount = filtered.filter(p=>!p.wafat).length;
+  const wafatCount = filtered.filter(p=>p.wafat).length;
+  document.getElementById('st-hidup').textContent = hidupCount;
+  document.getElementById('st-wafat').textContent = wafatCount;
 
   // visual highlight on gender cells
   const mCell = document.getElementById('st-male').closest('.stat-cell');
@@ -1889,6 +1951,25 @@ function openDetail(id) {
     parentsEl.style.display = 'none';
   }
   document.getElementById('d-gen').textContent=`Generasi ke-${p.gen}`;
+  // Status hidup/wafat
+  const statusEl = document.getElementById('d-status');
+  if (p.wafat) {
+    statusEl.innerHTML = `<span style="color:#888;font-weight:600">🕊️ Wafat</span>`;
+  } else {
+    statusEl.innerHTML = `<span style="color:#2d7a6e;font-weight:600">🟢 Masih Hidup</span>`;
+  }
+  // Tombol wafat toggle
+  const wafatBtn = document.getElementById('d-wafat-btn');
+  if (p.wafat) {
+    wafatBtn.textContent = '✅ Tandai Masih Hidup';
+    wafatBtn.style.borderColor = '#2d7a6e';
+    wafatBtn.style.color = '#2d7a6e';
+  } else {
+    wafatBtn.textContent = '🕊️ Tandai Wafat';
+    wafatBtn.style.borderColor = '#aaa';
+    wafatBtn.style.color = '#666';
+  }
+  wafatBtn.onclick = () => { toggleWafat(p.id); };
   document.getElementById('d-note').textContent=p.note||'—';
   const spouses=persons.filter(s=>s.spouseOf===id);
   const spouseOf=p.spouseOf?persons.find(x=>x.id===p.spouseOf):null;
@@ -1947,6 +2028,7 @@ function openDetail(id) {
   document.getElementById('detail-overlay').classList.add('open');
 }
 function closeDetail(){ document.getElementById('detail-overlay').classList.remove('open'); }
+
 
 // ════════════════════════════════════
 // FORM (admin only)
@@ -2139,7 +2221,7 @@ function importExcel(event){
       const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''});
       if(!rows.length){showToast('File kosong');return;}
       persons=[];nextId=1;
-      rows.forEach(r=>{ const p={id:String(r.ID||uid()),name:r.Nama||r.Name||'',gender:(r.JenisKelamin||r.Gender||'').toUpperCase()==='P'?'F':'M',note:String(r.Catatan||r.Note||''),parentId:String(r.ParentID||'')||null,spouseOf:String(r.SpouseOf||'')||null,wifeOrder:parseInt(r.NikahKe)||null,gen:0}; if(p.name) persons.push(p); });
+      rows.forEach(r=>{ const p={id:String(r.ID||uid()),name:r.Nama||r.Name||'',gender:(r.JenisKelamin||r.Gender||'').toUpperCase()==='P'?'F':'M',note:String(r.Catatan||r.Note||''),parentId:String(r.ParentID||'')||null,spouseOf:String(r.SpouseOf||'')||null,wifeOrder:parseInt(r.NikahKe)||null,wafat:r.Wafat==='1'||r.Wafat===true||false,gen:0}; if(p.name) persons.push(p); });
       nextId=Math.max(...persons.map(p=>parseInt(p.id.replace('p',''))||0))+1;
       filterGen='all'; filterGender=null;
       rebuildGen();render();updateStats(); saveToStorage(); showToast(`✓ Import berhasil: ${persons.length} anggota`);
@@ -2254,7 +2336,7 @@ async function loadFromCloud() {
     }
 
     persons = data.persons;
-    persons.forEach(p=>{ if(p.order===undefined) p.order=null; });
+    persons.forEach(p=>{ if(p.order===undefined) p.order=null; if(p.wafat===undefined) p.wafat=false; });
     nextId = data.nextId || (Math.max(...persons.map(p=>parseInt(p.id.replace('p',''))||0)) + 1);
 
     // Jika local lebih baru, sinkronkan balik ke cloud
@@ -2269,7 +2351,7 @@ async function loadFromCloud() {
     // Fallback ke localStorage
     if (localData && localData.persons && localData.persons.length) {
       persons = localData.persons;
-      persons.forEach(p=>{ if(p.order===undefined) p.order=null; });
+      persons.forEach(p=>{ if(p.order===undefined) p.order=null; if(p.wafat===undefined) p.wafat=false; });
       nextId = localData.nextId || 1;
       return 'backup';
     }
@@ -3020,6 +3102,8 @@ function updateMobileStats() {
   document.getElementById('m-st-gen-lbl').textContent = filterGen !== 'all' ? 'Gen Dipilih' : 'Generasi';
   document.getElementById('m-st-male').textContent = filtered.filter(p=>p.gender==='M').length;
   document.getElementById('m-st-female').textContent = filtered.filter(p=>p.gender==='F').length;
+  document.getElementById('m-st-hidup').textContent = filtered.filter(p=>!p.wafat).length;
+  document.getElementById('m-st-wafat').textContent = filtered.filter(p=>p.wafat).length;
 }
 
 function updateMobilePills() {
