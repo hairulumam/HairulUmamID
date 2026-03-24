@@ -2027,6 +2027,24 @@ function openDetail(id) {
   document.getElementById('d-add-child-btn').onclick=()=>{ closeDetail(); openAddForm(null,id); };
   document.getElementById('detail-overlay').classList.add('open');
 }
+function toggleWafat(id) {
+  const p = persons.find(x=>x.id===id); if(!p) return;
+  p.wafat = !p.wafat;
+  // update kartu di pohon
+  const card = document.getElementById('card-'+id);
+  if (card) {
+    if (p.wafat) card.classList.add('wafat');
+    else card.classList.remove('wafat');
+  }
+  // update stats
+  updateStats();
+  // simpan ke cloud
+  saveToStorage();
+  // refresh detail modal
+  openDetail(id);
+  showToast(p.wafat ? `🕊️ ${p.name} ditandai wafat` : `✅ ${p.name} ditandai masih hidup`);
+}
+
 function closeDetail(){ document.getElementById('detail-overlay').classList.remove('open'); }
 
 
